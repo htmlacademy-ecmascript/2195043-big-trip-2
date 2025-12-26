@@ -1,7 +1,4 @@
-import AbstractView from './abstract-view.js';
-
-function createPointTemplate() {
-  return `
+export const createPointTemplate = () => `
     <li class="trip-events__item">
       <div class="event">
         <time class="event__date" datetime="2019-03-18">MAR 18</time>
@@ -40,11 +37,3 @@ function createPointTemplate() {
       </div>
     </li>
   `;
-}
-
-export default class PointView extends AbstractView {
-  getTemplate() {
-    return createPointTemplate();
-  }
-}
-

@@ -1,7 +1,4 @@
-import AbstractView from './abstract-view.js';
-
-function createFormEditTemplate() {
-  return `
+export const createFormEditTemplate = () => `
     <li class="trip-events__item">
       <form class="event event--edit" action="#" method="post">
         <header class="event__header">
@@ -158,11 +155,3 @@ function createFormEditTemplate() {
       </form>
     </li>
   `;
-}
-
-export default class FormEditView extends AbstractView {
-  getTemplate() {
-    return createFormEditTemplate();
-  }
-}
-
