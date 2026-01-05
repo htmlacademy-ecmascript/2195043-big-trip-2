@@ -3,26 +3,55 @@ import ListView from '../view/list-view';
 import FormEditView from '../view/form-edit-view';
 import PointView from '../view/point-view';
 import { render, RenderPosition } from '../utils/render.js';
+import PointsModel from '../model/points-model.js';
 
 export default class BoardPresenter {
   sortComponent = new SortView();
   listComponent = new ListView();
+  #model = new PointsModel();
 
   constructor({ container }) {
     this.container = container;
   }
 
-  init() {
+  #renderBoard() {
     render(this.sortComponent, this.container);
     render(this.listComponent, this.container);
+
+    const points = this.#model.getPoints();
+    const destinations = this.#model.getDestinations();
+
+    this.#renderFormEdit(destinations);
+    this.#renderPoints(points);
+  }
+
+  #renderFormEdit(destinations) {
+    const defaultType = 'flight';
+    const defaultOffers = this.#model.getOffersByType(defaultType);
     render(
-      new FormEditView(),
+      new FormEditView({ type: defaultType }, null, defaultOffers, destinations, []),
       this.listComponent.getElement(),
       RenderPosition.AFTERBEGIN
     );
+  }
 
-    for (let i = 0; i < 3; i++) {
-      render(new PointView(), this.listComponent.getElement());
-    }
+  #renderPoints(points) {
+    points.forEach((point) => {
+      const destination = this.#model.getDestinationById(point.destination);
+      const availableOffers = this.#model.getOffersByType(point.type);
+      const selectedOffers = availableOffers.filter(offer => 
+        point.offers.includes(offer.id)
+      );
+
+      render(
+        new PointView(point, destination, selectedOffers),
+        this.listComponent.getElement()
+      );
+    });
+  }
+  
+  async init() {
+    await this.#model.init();
+    this.#renderBoard();
   }
 }

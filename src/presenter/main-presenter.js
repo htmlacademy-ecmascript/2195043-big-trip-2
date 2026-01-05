@@ -10,8 +10,8 @@ const filterPresenter = new FilterPresenter({container: filtersElement});
 const boardPresenter = new BoardPresenter({container: tripEventsElement});
 
 export default class MainPresenter {
-  init () {
+  async init () {
     filterPresenter.init();
-    boardPresenter.init();
+    await boardPresenter.init();
   }
 }
