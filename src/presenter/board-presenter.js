@@ -19,17 +19,14 @@ export default class BoardPresenter {
     render(this.listComponent, this.container);
 
     const points = this.#model.getPoints();
-    const destinations = this.#model.getDestinations();
 
-    this.#renderFormEdit(destinations);
+    this.#renderFormEdit();
     this.#renderPoints(points);
   }
 
-  #renderFormEdit(destinations) {
-    const defaultType = 'flight';
-    const defaultOffers = this.#model.getOffersByType(defaultType);
+  #renderFormEdit() {
     render(
-      new FormEditView({ type: defaultType }, null, defaultOffers, destinations, []),
+      new FormEditView({ type: 'flight' }, null, this.#model),
       this.listComponent.getElement(),
       RenderPosition.AFTERBEGIN
     );
@@ -39,7 +36,7 @@ export default class BoardPresenter {
     points.forEach((point) => {
       const destination = this.#model.getDestinationById(point.destination);
       const availableOffers = this.#model.getOffersByType(point.type);
-      const selectedOffers = availableOffers.filter(offer => 
+      const selectedOffers = availableOffers.filter((offer) =>
         point.offers.includes(offer.id)
       );
 
@@ -49,7 +46,7 @@ export default class BoardPresenter {
       );
     });
   }
-  
+
   async init() {
     await this.#model.init();
     this.#renderBoard();
