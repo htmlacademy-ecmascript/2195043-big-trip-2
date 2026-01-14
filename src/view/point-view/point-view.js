@@ -1,7 +1,7 @@
-import View from '../view.js';
+import AbstractView from '../../framework/view/abstract-view.js';
 import { createPointTemplate } from './point-template.js';
 
-export default class PointView extends View {
+export default class PointView extends AbstractView {
   constructor(point, destination, selectedOffers) {
     super();
     this.point = point;
@@ -9,7 +9,7 @@ export default class PointView extends View {
     this.selectedOffers = selectedOffers;
   }
 
-  getTemplate() {
+  get template() {
     return createPointTemplate(this.point, this.destination, this.selectedOffers);
   }
 }

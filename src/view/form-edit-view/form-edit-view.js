@@ -1,7 +1,7 @@
-import View from '../view.js';
+import AbstractView from '../../framework/view/abstract-view.js';
 import { createFormEditTemplate } from './form-edit-template.js';
 
-export default class FormEditView extends View {
+export default class FormEditView extends AbstractView {
   constructor(point = {}, destination = null, model) {
     super();
     this.point = point;
@@ -9,7 +9,7 @@ export default class FormEditView extends View {
     this.model = model;
   }
 
-  getTemplate() {
+  get template() {
     const type = this.point.type || 'flight';
     const availableOffers = this.model ? this.model.getOffersByType(type) : [];
     const destinations = this.model ? this.model.getDestinations() : [];

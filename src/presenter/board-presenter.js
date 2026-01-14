@@ -27,7 +27,7 @@ export default class BoardPresenter {
   #renderFormEdit() {
     render(
       new FormEditView({ type: 'flight' }, null, this.#model),
-      this.listComponent.getElement(),
+      this.listComponent.element,
       RenderPosition.AFTERBEGIN
     );
   }
@@ -42,7 +42,7 @@ export default class BoardPresenter {
 
       render(
         new PointView(point, destination, selectedOffers),
-        this.listComponent.getElement()
+        this.listComponent.element
       );
     });
   }
