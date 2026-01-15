@@ -3,32 +3,36 @@ import ListView from '../view/list-view';
 import FormEditView from '../view/form-edit-view';
 import PointView from '../view/point-view';
 import { render, RenderPosition } from '../utils/render.js';
-import PointsModel from '../model/points-model.js';
 
 export default class BoardPresenter {
   sortComponent = new SortView();
   listComponent = new ListView();
-  #model = new PointsModel();
+  #pointsModel = null;
+  #destinationsModel = null;
+  #offersModel = null;
   #pointComponents = new Map();
   #currentEditingPointId = null;
 
-  constructor({ container }) {
+  constructor({ container, pointsModel, destinationsModel, offersModel }) {
     this.container = container;
+    this.#pointsModel = pointsModel;
+    this.#destinationsModel = destinationsModel;
+    this.#offersModel = offersModel;
   }
 
   #renderBoard() {
     render(this.sortComponent, this.container);
     render(this.listComponent, this.container);
 
-    const points = this.#model.getPoints();
+    const points = this.#pointsModel.getPoints();
 
     this.#renderPoints(points);
   }
 
   #renderPoints(points) {
     points.forEach((point) => {
-      const destination = this.#model.getDestinationById(point.destination);
-      const availableOffers = this.#model.getOffersByType(point.type);
+      const destination = this.#destinationsModel.getDestinationById(point.destination);
+      const availableOffers = this.#offersModel.getOffersByType(point.type);
       const selectedOffers = availableOffers.filter((offer) =>
         point.offers.includes(offer.id)
       );
@@ -50,8 +54,8 @@ export default class BoardPresenter {
   }
 
   #replacePointToForm(point) {
-    const destination = this.#model.getDestinationById(point.destination);
-    const availableOffers = this.#model.getOffersByType(point.type);
+    const destination = this.#destinationsModel.getDestinationById(point.destination);
+    const availableOffers = this.#offersModel.getOffersByType(point.type);
     const selectedOffers = availableOffers.filter((offer) =>
       point.offers.includes(offer.id)
     );
@@ -59,7 +63,10 @@ export default class BoardPresenter {
     const formComponent = new FormEditView(
       point,
       destination,
-      this.#model,
+      {
+        getOffersByType: (type) => this.#offersModel.getOffersByType(type),
+        getDestinations: () => this.#destinationsModel.getDestinations()
+      },
       () => this.#replaceFormToPoint(point.id),
       () => this.#replaceFormToPoint(point.id)
     );
@@ -103,8 +110,7 @@ export default class BoardPresenter {
     }
   };
 
-  async init() {
-    await this.#model.init();
+  init() {
     this.#renderBoard();
   }
 }
