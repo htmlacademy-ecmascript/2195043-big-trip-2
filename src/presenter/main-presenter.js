@@ -13,13 +13,21 @@ const pointsModel = new PointsModel();
 const destinationsModel = new DestinationsModel();
 const offersModel = new OffersModel();
 
-const filterPresenter = new FilterPresenter({container: filtersElement});
+const filterPresenter = new FilterPresenter({
+  container: filtersElement,
+  pointsModel
+});
+
 const boardPresenter = new BoardPresenter({
   container: tripEventsElement,
   pointsModel,
   destinationsModel,
   offersModel
 });
+
+filterPresenter.onFilterChange = (filterType) => {
+  boardPresenter.setFilter(filterType);
+};
 
 export default class MainPresenter {
   async init() {

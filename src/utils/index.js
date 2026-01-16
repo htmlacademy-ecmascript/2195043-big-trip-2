@@ -44,3 +44,52 @@ export const getDuration = (dateFrom, dateTo) => {
 };
 
 export const POINT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
+
+export const FilterType = {
+  EVERYTHING: 'everything',
+  FUTURE: 'future',
+  PRESENT: 'present',
+  PAST: 'past'
+};
+
+export const isPointFuture = (point) => {
+  const now = dayjs();
+  return dayjs(point.date_from).isAfter(now);
+};
+
+export const isPointPast = (point) => {
+  const now = dayjs();
+  return dayjs(point.date_to).isBefore(now);
+};
+
+export const isPointPresent = (point) => {
+  const now = dayjs();
+  const dateFrom = dayjs(point.date_from);
+  const dateTo = dayjs(point.date_to);
+  return (dateFrom.isBefore(now) || dateFrom.isSame(now)) && (dateTo.isAfter(now) || dateTo.isSame(now));
+};
+
+const filterByType = {
+  [FilterType.FUTURE]: isPointFuture,
+  [FilterType.PAST]: isPointPast,
+  [FilterType.PRESENT]: isPointPresent,
+  [FilterType.EVERYTHING]: () => true
+};
+
+export const filterPoints = (points, filterType) => {
+  const filterFn = filterByType[filterType] || filterByType[FilterType.EVERYTHING];
+  return points.filter(filterFn);
+};
+
+export const getFilterAvailability = (points) => {
+  const hasFuture = points.some(isPointFuture);
+  const hasPast = points.some(isPointPast);
+  const hasPresent = points.some(isPointPresent);
+
+  return {
+    [FilterType.EVERYTHING]: true,
+    [FilterType.FUTURE]: hasFuture,
+    [FilterType.PAST]: hasPast,
+    [FilterType.PRESENT]: hasPresent
+  };
+};
