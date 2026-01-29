@@ -104,11 +104,37 @@ export default class BoardPresenter {
         destination,
         selectedOffers,
         destinationsModel: this.#destinationsModel,
-        offersModel: this.#offersModel
+        offersModel: this.#offersModel,
+        onDataChange: (update) => this.#handlePointChange(point.id, update),
+        onModeChange: (currentPresenter) => this.#handleModeChange(currentPresenter)
       });
 
       this.#pointPresenters.push(pointPresenter);
       pointPresenter.init();
+    });
+  }
+
+  #handlePointChange(pointId, update) {
+    this.#pointsModel.updatePoint({ id: pointId, ...update });
+    const point = this.#pointsModel.getPoints().find((p) => p.id === pointId);
+    if (point) {
+      const presenter = this.#pointPresenters.find((p) => p.pointId === pointId);
+      if (presenter) {
+        const { destination, selectedOffers } = this.#getPointData(point);
+        presenter.updatePoint(point, destination, selectedOffers);
+      }
+    }
+  }
+
+  #handleModeChange(currentPresenter) {
+    this.#resetAllPointsToViewMode(currentPresenter);
+  }
+
+  #resetAllPointsToViewMode(currentPresenter) {
+    this.#pointPresenters.forEach((presenter) => {
+      if (presenter !== currentPresenter) {
+        presenter.resetView();
+      }
     });
   }
 

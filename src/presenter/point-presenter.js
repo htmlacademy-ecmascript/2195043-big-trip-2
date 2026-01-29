@@ -10,17 +10,25 @@ export default class PointPresenter {
   #selectedOffers = null;
   #destinationsModel = null;
   #offersModel = null;
+  #onDataChange = null;
+  #onModeChange = null;
   #isEditing = false;
   #escKeyDownHandler = null;
 
-  constructor({ container, point, destination, selectedOffers, destinationsModel, offersModel }) {
+  constructor({ container, point, destination, selectedOffers, destinationsModel, offersModel, onDataChange, onModeChange }) {
     this.#container = container;
     this.#point = point;
     this.#destination = destination;
     this.#selectedOffers = selectedOffers;
     this.#destinationsModel = destinationsModel;
     this.#offersModel = offersModel;
+    this.#onDataChange = onDataChange;
+    this.#onModeChange = onModeChange;
     this.#escKeyDownHandler = this.#handleEscKeyDown.bind(this);
+  }
+
+  get pointId() {
+    return this.#point.id;
   }
 
   init() {
@@ -32,12 +40,17 @@ export default class PointPresenter {
       this.#point,
       this.#destination,
       this.#selectedOffers,
-      () => this.#switchToEditMode()
+      () => this.#switchToEditMode(),
+      () => this.#handleFavoriteClick()
     );
 
     this.#clearContainer();
     this.#container.append(this.#pointView.element);
     this.#isEditing = false;
+  }
+
+  #handleFavoriteClick() {
+    this.#onDataChange?.({ is_favorite: !this.#point.is_favorite });
   }
 
   #renderFormView() {
@@ -62,6 +75,7 @@ export default class PointPresenter {
     if (this.#isEditing) {
       return;
     }
+    this.#onModeChange?.(this);
     this.#renderFormView();
   }
 
@@ -96,6 +110,24 @@ export default class PointPresenter {
   #handleEscKeyDown(evt) {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
+      this.#switchToViewMode();
+    }
+  }
+
+  updatePoint(point, destination, selectedOffers) {
+    this.#point = point;
+    this.#destination = destination;
+    this.#selectedOffers = selectedOffers;
+
+    if (!this.#isEditing && this.#pointView) {
+      this.#pointView.removeElement();
+      this.#pointView = null;
+      this.#renderPointView();
+    }
+  }
+
+  resetView() {
+    if (this.#isEditing) {
       this.#switchToViewMode();
     }
   }

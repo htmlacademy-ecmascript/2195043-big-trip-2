@@ -3,14 +3,16 @@ import { createPointTemplate } from './point-template.js';
 
 export default class PointView extends AbstractView {
   #onRollupClick = null;
+  #onFavoriteClick = null;
   #handlersSet = false;
 
-  constructor(point, destination, selectedOffers, onRollupClick) {
+  constructor(point, destination, selectedOffers, onRollupClick, onFavoriteClick) {
     super();
     this.point = point;
     this.destination = destination;
     this.selectedOffers = selectedOffers;
     this.#onRollupClick = onRollupClick;
+    this.#onFavoriteClick = onFavoriteClick;
   }
 
   get template() {
@@ -20,22 +22,32 @@ export default class PointView extends AbstractView {
   get element() {
     const element = super.element;
     if (!this.#handlersSet) {
-      this.#setRollupClickHandler(element);
+      this.#setEventHandlers(element);
       this.#handlersSet = true;
     }
     return element;
   }
 
-  #setRollupClickHandler(element) {
+  #setEventHandlers(element) {
     const rollupButton = element.querySelector('.event__rollup-btn');
     if (rollupButton) {
       rollupButton.addEventListener('click', this.#rollupClickHandler);
+    }
+
+    const favoriteButton = element.querySelector('.event__favorite-btn');
+    if (favoriteButton) {
+      favoriteButton.addEventListener('click', this.#favoriteClickHandler);
     }
   }
 
   #rollupClickHandler = (evt) => {
     evt.preventDefault();
     this.#onRollupClick?.();
+  };
+
+  #favoriteClickHandler = (evt) => {
+    evt.preventDefault();
+    this.#onFavoriteClick?.();
   };
 }
 
