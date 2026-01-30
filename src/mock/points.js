@@ -127,8 +127,27 @@ export const getRandomPoint = () => {
     : [];
   
   const now = new Date();
-  const dateFrom = new Date(now.getTime() + getRandomInt(-30, 30) * 24 * 60 * 60 * 1000);
-  const dateTo = new Date(dateFrom.getTime() + getRandomInt(1, 7) * 24 * 60 * 60 * 1000);
+  const daysOffset = getRandomInt(-30, 30);
+  const hoursOffset = getRandomInt(0, 23);
+  const minutesOffset = getRandomInt(0, 59);
+  
+  const dateFrom = new Date(
+    now.getTime() + 
+    daysOffset * 24 * 60 * 60 * 1000 +
+    hoursOffset * 60 * 60 * 1000 +
+    minutesOffset * 60 * 1000
+  );
+  
+  const durationDays = getRandomInt(1, 7);
+  const durationHours = getRandomInt(0, 23);
+  const durationMinutes = getRandomInt(0, 59);
+  
+  const dateTo = new Date(
+    dateFrom.getTime() +
+    durationDays * 24 * 60 * 60 * 1000 +
+    durationHours * 60 * 60 * 1000 +
+    durationMinutes * 60 * 1000
+  );
 
   return {
     id: crypto.randomUUID(),

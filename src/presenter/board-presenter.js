@@ -14,6 +14,7 @@ export default class BoardPresenter {
   #offersModel = null;
   #pointPresenters = [];
   #currentFilter = FilterType.EVERYTHING;
+  #currentSortType = 'day';
 
   constructor({ container, pointsModel, destinationsModel, offersModel }) {
     this.container = container;
@@ -25,11 +26,12 @@ export default class BoardPresenter {
   #renderBoard() {
     const allPoints = this.#pointsModel.getPoints();
     const filteredPoints = filterPoints(allPoints, this.#currentFilter);
+    const sortedPoints = this.#sortPoints(filteredPoints);
 
-    if (filteredPoints.length === 0) {
+    if (sortedPoints.length === 0) {
       this.#renderEmptyList();
     } else {
-      this.#renderPointsList(filteredPoints);
+      this.#renderPointsList(sortedPoints);
     }
   }
 
@@ -48,13 +50,19 @@ export default class BoardPresenter {
 
   #renderPointsList(points) {
     this.#clearPoints();
-    this.#clearComponents();
     
-    this.#sortComponent = new SortView();
-    this.#listComponent = new ListView();
+    if (!this.#sortComponent) {
+      this.#sortComponent = new SortView(
+        this.#currentSortType,
+        (sortType) => this.#handleSortTypeChange(sortType)
+      );
+      render(this.#sortComponent, this.container);
+    }
     
-    render(this.#sortComponent, this.container);
-    render(this.#listComponent, this.container);
+    if (!this.#listComponent) {
+      this.#listComponent = new ListView();
+      render(this.#listComponent, this.container);
+    }
 
     this.#renderPoints(points);
   }
@@ -78,6 +86,12 @@ export default class BoardPresenter {
     
     while (this.container.firstChild) {
       this.container.firstChild.remove();
+    }
+  }
+
+  #clearListOnly() {
+    if (this.#listComponent && this.#listComponent.element) {
+      this.#listComponent.element.innerHTML = '';
     }
   }
 
@@ -136,6 +150,49 @@ export default class BoardPresenter {
         presenter.resetView();
       }
     });
+  }
+
+  #handleSortTypeChange(sortType) {
+    if (this.#currentSortType === sortType) {
+      return;
+    }
+    this.#currentSortType = sortType;
+    
+    const allPoints = this.#pointsModel.getPoints();
+    const filteredPoints = filterPoints(allPoints, this.#currentFilter);
+    const sortedPoints = this.#sortPoints(filteredPoints);
+    
+    this.#clearPoints();
+    this.#clearListOnly();
+    this.#renderPoints(sortedPoints);
+  }
+
+  #sortPoints(points) {
+    const sortedPoints = [...points];
+
+    switch (this.#currentSortType) {
+      case 'day':
+        sortedPoints.sort((a, b) => {
+          const dateA = new Date(a.date_from);
+          const dateB = new Date(b.date_from);
+          return dateA - dateB;
+        });
+        break;
+      case 'time':
+        sortedPoints.sort((a, b) => {
+          const durationA = new Date(a.date_to) - new Date(a.date_from);
+          const durationB = new Date(b.date_to) - new Date(b.date_from);
+          return durationB - durationA;
+        });
+        break;
+      case 'price':
+        sortedPoints.sort((a, b) => b.base_price - a.base_price);
+        break;
+      default:
+        break;
+    }
+
+    return sortedPoints;
   }
 
   init() {
