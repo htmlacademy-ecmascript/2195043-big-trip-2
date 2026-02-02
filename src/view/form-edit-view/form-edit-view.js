@@ -1,45 +1,50 @@
-import AbstractView from '../../framework/view/abstract-view.js';
+import AbstractStatefulView from '../../framework/view/abstract-stateful-view.js';
 import { createFormEditTemplate } from './form-edit-template.js';
 
-export default class FormEditView extends AbstractView {
+export default class FormEditView extends AbstractStatefulView {
   #onFormSubmit = null;
   #onFormClose = null;
-  #handlersSet = false;
+  #handlersRestored = false;
+  #model = null;
 
   constructor(point = {}, destination = null, model, onFormSubmit, onFormClose) {
     super();
-    this.point = point;
-    this.destination = destination;
-    this.model = model;
+    this._state = {
+      point: { ...point },
+      destination: destination
+    };
+    this.#model = model;
     this.#onFormSubmit = onFormSubmit;
     this.#onFormClose = onFormClose;
   }
 
+  get element() {
+    const element = super.element;
+    if (!this.#handlersRestored) {
+      this.#handlersRestored = true;
+      this._restoreHandlers();
+    }
+    return element;
+  }
+
   get template() {
-    const type = this.point.type || 'flight';
-    const availableOffers = this.model ? this.model.getOffersByType(type) : [];
-    const destinations = this.model ? this.model.getDestinations() : [];
-    const selectedOfferIds = this.point.offers || [];
+    const type = this._state.point.type || 'flight';
+    const availableOffers = this.#model ? this.#model.getOffersByType(type) : [];
+    const destinations = this.#model ? this.#model.getDestinations() : [];
+    const selectedOfferIds = this._state.point.offers || [];
 
     return createFormEditTemplate(
-      this.point,
-      this.destination,
+      this._state.point,
+      this._state.destination,
       availableOffers,
       destinations,
       selectedOfferIds
     );
   }
 
-  get element() {
+  _restoreHandlers() {
     const element = super.element;
-    if (!this.#handlersSet) {
-      this.#setFormHandlers(element);
-      this.#handlersSet = true;
-    }
-    return element;
-  }
-
-  #setFormHandlers(element) {
+    
     const form = element.querySelector('.event--edit');
     if (form) {
       form.addEventListener('submit', this.#formSubmitHandler);
@@ -48,6 +53,16 @@ export default class FormEditView extends AbstractView {
     const rollupButton = element.querySelector('.event__rollup-btn');
     if (rollupButton) {
       rollupButton.addEventListener('click', this.#rollupClickHandler);
+    }
+
+    const typeInputs = element.querySelectorAll('input[name="event-type"]');
+    typeInputs.forEach((input) => {
+      input.addEventListener('change', this.#typeChangeHandler);
+    });
+
+    const destinationInput = element.querySelector('.event__input--destination');
+    if (destinationInput) {
+      destinationInput.addEventListener('change', this.#destinationChangeHandler);
     }
   }
 
@@ -59,6 +74,33 @@ export default class FormEditView extends AbstractView {
   #rollupClickHandler = (evt) => {
     evt.preventDefault();
     this.#onFormClose?.();
+  };
+
+  #typeChangeHandler = (evt) => {
+    const newType = evt.target.value;
+    this.updateElement({
+      point: {
+        ...this._state.point,
+        type: newType,
+        offers: [] // Сбрасываем выбранные опции при смене типа
+      }
+    });
+  };
+
+  #destinationChangeHandler = (evt) => {
+    const destinationName = evt.target.value;
+    if (!this.#model) {
+      return;
+    }
+    
+    const destinations = this.#model.getDestinations();
+    const destination = destinations.find(dest => dest.name === destinationName);
+    
+    if (destination) {
+      this.updateElement({
+        destination: destination
+      });
+    }
   };
 }
 

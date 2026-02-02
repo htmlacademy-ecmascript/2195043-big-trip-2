@@ -18,4 +18,8 @@ export default class DestinationsModel {
   getDestinationById(id) {
     return this.#destinations.find(dest => dest.id === id);
   }
+
+  getDestinationByName(name) {
+    return this.#destinations.find(dest => dest.name === name);
+  }
 }
