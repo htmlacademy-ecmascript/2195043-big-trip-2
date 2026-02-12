@@ -1,7 +1,7 @@
 import AbstractStatefulView from '../../framework/view/abstract-stateful-view.js';
-import { createFormEditTemplate } from './form-edit-template.js';
+import { createPointEditTemplate } from './point-edit-template.js';
 
-export default class FormEditView extends AbstractStatefulView {
+export default class PointEditView extends AbstractStatefulView {
   #onFormSubmit = null;
   #onFormClose = null;
   #handlersRestored = false;
@@ -33,7 +33,7 @@ export default class FormEditView extends AbstractStatefulView {
     const destinations = this.#model ? this.#model.getDestinations() : [];
     const selectedOfferIds = this._state.point.offers || [];
 
-    return createFormEditTemplate(
+    return createPointEditTemplate(
       this._state.point,
       this._state.destination,
       availableOffers,
@@ -44,7 +44,7 @@ export default class FormEditView extends AbstractStatefulView {
 
   _restoreHandlers() {
     const element = super.element;
-    
+
     const form = element.querySelector('.event--edit');
     if (form) {
       form.addEventListener('submit', this.#formSubmitHandler);
@@ -92,10 +92,10 @@ export default class FormEditView extends AbstractStatefulView {
     if (!this.#model) {
       return;
     }
-    
+
     const destinations = this.#model.getDestinations();
     const destination = destinations.find(dest => dest.name === destinationName);
-    
+
     if (destination) {
       this.updateElement({
         destination: destination
@@ -103,4 +103,3 @@ export default class FormEditView extends AbstractStatefulView {
     }
   };
 }
-

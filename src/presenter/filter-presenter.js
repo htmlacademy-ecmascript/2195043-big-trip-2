@@ -1,6 +1,6 @@
 import FilterView from '../view/filter-view';
 import { render } from '../utils/render.js';
-import { FilterType, getFilterAvailability } from '../utils/index.js';
+import { FilterType, getFilterAvailability } from '../utils';
 
 export default class FilterPresenter {
   #filterComponent = null;

@@ -4,7 +4,7 @@ import EmptyListMessageView from '../view/empty-list-message-view';
 import PointItemContainerView from '../view/point-item-container-view';
 import PointPresenter from './point-presenter.js';
 import { render } from '../utils/render.js';
-import { FilterType, filterPoints } from '../utils/index.js';
+import { FilterType, filterPoints } from '../utils';
 
 export default class BoardPresenter {
   #sortComponent = null;
@@ -12,7 +12,7 @@ export default class BoardPresenter {
   #pointsModel = null;
   #destinationsModel = null;
   #offersModel = null;
-  #pointPresenters = [];
+  #pointPresenters = new Map();
   #currentFilter = FilterType.EVERYTHING;
   #currentSortType = 'day';
 
@@ -68,10 +68,8 @@ export default class BoardPresenter {
   }
 
   #clearPoints() {
-    this.#pointPresenters.forEach((presenter) => {
-      presenter.destroy();
-    });
-    this.#pointPresenters = [];
+    this.#pointPresenters.forEach((presenter) => presenter.destroy());
+    this.#pointPresenters.clear();
   }
 
   #clearComponents() {
@@ -123,16 +121,16 @@ export default class BoardPresenter {
         onModeChange: (currentPresenter) => this.#handleModeChange(currentPresenter)
       });
 
-      this.#pointPresenters.push(pointPresenter);
+      this.#pointPresenters.set(point.id, pointPresenter);
       pointPresenter.init();
     });
   }
 
-  #handlePointChange(pointId, update) {
-    this.#pointsModel.updatePoint({ id: pointId, ...update });
+  #handlePointChange(pointId, patch) {
+    this.#pointsModel.patchPoint({ id: pointId, ...patch });
     const point = this.#pointsModel.getPoints().find((p) => p.id === pointId);
     if (point) {
-      const presenter = this.#pointPresenters.find((p) => p.pointId === pointId);
+      const presenter = this.#pointPresenters.get(pointId);
       if (presenter) {
         const { destination, selectedOffers } = this.#getPointData(point);
         presenter.updatePoint(point, destination, selectedOffers);

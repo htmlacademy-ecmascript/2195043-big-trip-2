@@ -1,6 +1,6 @@
 import { toCapitalize, POINT_TYPES, formattedDateTimeForInput } from '../../utils';
 
-export const createFormEditTemplate = (point = {}, destination = null, availableOffers = [], destinations = [], selectedOfferIds = []) => {
+export const createPointEditTemplate = (point = {}, destination = null, availableOffers = [], destinations = [], selectedOfferIds = []) => {
   const type = point.type || 'flight';
   const destinationName = destination ? destination.name : '';
   const basePrice = point.base_price || '';
