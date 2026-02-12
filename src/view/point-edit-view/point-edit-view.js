@@ -1,11 +1,17 @@
 import AbstractStatefulView from '../../framework/view/abstract-stateful-view.js';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
 import { createPointEditTemplate } from './point-edit-template.js';
+
+const FLATPICKR_DATE_FORMAT = 'd/m/y H:i';
 
 export default class PointEditView extends AbstractStatefulView {
   #onFormSubmit = null;
   #onFormClose = null;
   #handlersRestored = false;
   #model = null;
+  #dateFromPicker = null;
+  #dateToPicker = null;
 
   constructor(point = {}, destination = null, model, onFormSubmit, onFormClose) {
     super();
@@ -25,6 +31,14 @@ export default class PointEditView extends AbstractStatefulView {
       this._restoreHandlers();
     }
     return element;
+  }
+
+  removeElement() {
+    this.#dateFromPicker?.destroy();
+    this.#dateFromPicker = null;
+    this.#dateToPicker?.destroy();
+    this.#dateToPicker = null;
+    super.removeElement();
   }
 
   get template() {
@@ -64,6 +78,55 @@ export default class PointEditView extends AbstractStatefulView {
     if (destinationInput) {
       destinationInput.addEventListener('change', this.#destinationChangeHandler);
     }
+
+    this.#initDatePickers(element);
+  }
+
+  #initDatePickers(element) {
+    const startDateInput = element.querySelector('#event-start-time-1');
+    const endDateInput = element.querySelector('#event-end-time-1');
+
+    if (!startDateInput || !endDateInput) {
+      return;
+    }
+
+    const defaultStartDate = this._state.point.date_from ? new Date(this._state.point.date_from) : null;
+    const defaultEndDate = this._state.point.date_to ? new Date(this._state.point.date_to) : null;
+    const minEndDate = defaultStartDate ?? new Date();
+
+    const flatpickrConfig = {
+      enableTime: true,
+      dateFormat: FLATPICKR_DATE_FORMAT,
+      'time_24hr': true,
+      defaultDate: null
+    };
+
+    this.#dateFromPicker = flatpickr(startDateInput, {
+      ...flatpickrConfig,
+      defaultDate: defaultStartDate,
+      onChange: (selectedDates) => {
+        if (selectedDates[0]) {
+          this._state.point.date_from = selectedDates[0].toISOString();
+          this.#dateToPicker.set('minDate', selectedDates[0]);
+          const endDate = this._state.point.date_to ? new Date(this._state.point.date_to) : null;
+          if (endDate && endDate < selectedDates[0]) {
+            this._state.point.date_to = selectedDates[0].toISOString();
+            this.#dateToPicker.setDate(selectedDates[0]);
+          }
+        }
+      }
+    });
+
+    this.#dateToPicker = flatpickr(endDateInput, {
+      ...flatpickrConfig,
+      defaultDate: defaultEndDate,
+      minDate: minEndDate,
+      onChange: (selectedDates) => {
+        if (selectedDates[0]) {
+          this._state.point.date_to = selectedDates[0].toISOString();
+        }
+      }
+    });
   }
 
   #formSubmitHandler = (evt) => {
