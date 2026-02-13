@@ -1,5 +1,7 @@
-import PointView from '../view/point-view/point-view.js';
-import FormEditView from '../view/form-edit-view/form-edit-view.js';
+import PointView from '../view/point-view';
+import PointEditView from '../view/point-edit-view';
+
+const PointMode = { VIEW: 'view', EDIT: 'edit' };
 
 export default class PointPresenter {
   #pointView = null;
@@ -12,7 +14,7 @@ export default class PointPresenter {
   #offersModel = null;
   #onDataChange = null;
   #onModeChange = null;
-  #isEditing = false;
+  #mode = PointMode.VIEW;
   #escKeyDownHandler = null;
 
   constructor({ container, point, destination, selectedOffers, destinationsModel, offersModel, onDataChange, onModeChange }) {
@@ -46,7 +48,7 @@ export default class PointPresenter {
 
     this.#clearContainer();
     this.#container.append(this.#pointView.element);
-    this.#isEditing = false;
+    this.#mode = PointMode.VIEW;
   }
 
   #handleFavoriteClick() {
@@ -54,7 +56,7 @@ export default class PointPresenter {
   }
 
   #renderFormView() {
-    this.#formView = new FormEditView(
+    this.#formView = new PointEditView(
       this.#point,
       this.#destination,
       {
@@ -67,12 +69,12 @@ export default class PointPresenter {
 
     this.#clearContainer();
     this.#container.append(this.#formView.element);
-    this.#isEditing = true;
+    this.#mode = PointMode.EDIT;
     this.#setEventHandlers();
   }
 
   #switchToEditMode() {
-    if (this.#isEditing) {
+    if (this.#mode === PointMode.EDIT) {
       return;
     }
     this.#onModeChange?.(this);
@@ -80,7 +82,7 @@ export default class PointPresenter {
   }
 
   #switchToViewMode() {
-    if (!this.#isEditing) {
+    if (this.#mode === PointMode.VIEW) {
       return;
     }
 
@@ -119,7 +121,7 @@ export default class PointPresenter {
     this.#destination = destination;
     this.#selectedOffers = selectedOffers;
 
-    if (!this.#isEditing && this.#pointView) {
+    if (this.#mode === PointMode.VIEW && this.#pointView) {
       this.#pointView.removeElement();
       this.#pointView = null;
       this.#renderPointView();
@@ -127,7 +129,7 @@ export default class PointPresenter {
   }
 
   resetView() {
-    if (this.#isEditing) {
+    if (this.#mode === PointMode.EDIT) {
       this.#switchToViewMode();
     }
   }
