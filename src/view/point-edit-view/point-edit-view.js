@@ -145,7 +145,7 @@ export default class PointEditView extends AbstractStatefulView {
       point: {
         ...this._state.point,
         type: newType,
-        offers: [] // Сбрасываем выбранные опции при смене типа
+        offers: []
       }
     });
   };
