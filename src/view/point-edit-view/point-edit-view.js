@@ -16,10 +16,10 @@ export default class PointEditView extends AbstractStatefulView {
 
   constructor(point = {}, destination = null, model, onFormSubmit, onFormClose) {
     super();
-    this._state = {
+    this._setState({
       point: { ...point },
       destination: destination
-    };
+    });
     this.#model = model;
     this.#onFormSubmit = onFormSubmit;
     this.#onFormClose = onFormClose;
@@ -80,6 +80,16 @@ export default class PointEditView extends AbstractStatefulView {
       destinationInput.addEventListener('change', this.#destinationChangeHandler);
     }
 
+    const priceInput = element.querySelector('input[name="event-price"]');
+    if (priceInput) {
+      priceInput.addEventListener('input', this.#priceChangeHandler);
+    }
+
+    const offerCheckboxes = element.querySelectorAll('.event__available-offers input[type="checkbox"]');
+    offerCheckboxes.forEach((checkbox) => {
+      checkbox.addEventListener('change', this.#offerChangeHandler);
+    });
+
     this.#initDatePickers(element);
   }
 
@@ -113,7 +123,9 @@ export default class PointEditView extends AbstractStatefulView {
       maxDate: maxStartDate,
       onChange: (selectedDates) => {
         if (selectedDates[0]) {
-          this._state.point.date_from = selectedDates[0].toISOString();
+          this._setState({
+            point: { ...this._state.point, date_from: selectedDates[0].toISOString() }
+          });
           this.#dateToPicker.set('minDate', new Date(selectedDates[0].getTime() + MIN_TRIP_DURATION_MS));
         }
       }
@@ -125,7 +137,9 @@ export default class PointEditView extends AbstractStatefulView {
       minDate: minEndDate,
       onChange: (selectedDates) => {
         if (selectedDates[0]) {
-          this._state.point.date_to = selectedDates[0].toISOString();
+          this._setState({
+            point: { ...this._state.point, date_to: selectedDates[0].toISOString() }
+          });
           this.#dateFromPicker.set('maxDate', new Date(selectedDates[0].getTime() - MIN_TRIP_DURATION_MS));
         }
       }
@@ -134,8 +148,22 @@ export default class PointEditView extends AbstractStatefulView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
-    this.#onFormSubmit?.();
+    this.#onFormSubmit?.(this.#getFormData());
   };
+
+  #getFormData() {
+    const priceInput = this.element?.querySelector('input[name="event-price"]');
+    const basePrice = priceInput ? parseInt(priceInput.value, 10) || 0 : this._state.point.base_price || 0;
+
+    return {
+      type: this._state.point.type || 'flight',
+      destination: this._state.destination?.id ?? this._state.point.destination,
+      date_from: this._state.point.date_from,
+      date_to: this._state.point.date_to,
+      base_price: basePrice,
+      offers: this._state.point.offers || []
+    };
+  }
 
   #rollupClickHandler = (evt) => {
     evt.preventDefault();
@@ -167,5 +195,26 @@ export default class PointEditView extends AbstractStatefulView {
         destination: destination
       });
     }
+  };
+
+  #priceChangeHandler = (evt) => {
+    const value = parseInt(evt.target.value, 10) || 0;
+    this._setState({
+      point: { ...this._state.point, base_price: value }
+    });
+  };
+
+  #offerChangeHandler = (evt) => {
+    const checkbox = evt.target;
+    const offerId = checkbox.name.replace(/^event-offer-/, '');
+    const currentOffers = this._state.point.offers || [];
+
+    const newOffers = checkbox.checked
+      ? [...currentOffers, offerId]
+      : currentOffers.filter((id) => id !== offerId);
+
+    this._setState({
+      point: { ...this._state.point, offers: newOffers }
+    });
   };
 }
