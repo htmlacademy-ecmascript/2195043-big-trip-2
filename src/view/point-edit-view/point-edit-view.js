@@ -4,6 +4,7 @@ import 'flatpickr/dist/flatpickr.min.css';
 import { createPointEditTemplate } from './point-edit-template.js';
 
 const FLATPICKR_DATE_FORMAT = 'd/m/y H:i';
+const MIN_TRIP_DURATION_MS = 60 * 1000;
 
 export default class PointEditView extends AbstractStatefulView {
   #onFormSubmit = null;
@@ -92,7 +93,12 @@ export default class PointEditView extends AbstractStatefulView {
 
     const defaultStartDate = this._state.point.date_from ? new Date(this._state.point.date_from) : null;
     const defaultEndDate = this._state.point.date_to ? new Date(this._state.point.date_to) : null;
-    const minEndDate = defaultStartDate ?? new Date();
+    const minEndDate = defaultStartDate
+      ? new Date(defaultStartDate.getTime() + MIN_TRIP_DURATION_MS)
+      : new Date();
+    const maxStartDate = defaultEndDate
+      ? new Date(defaultEndDate.getTime() - MIN_TRIP_DURATION_MS)
+      : undefined;
 
     const flatpickrConfig = {
       enableTime: true,
@@ -104,15 +110,11 @@ export default class PointEditView extends AbstractStatefulView {
     this.#dateFromPicker = flatpickr(startDateInput, {
       ...flatpickrConfig,
       defaultDate: defaultStartDate,
+      maxDate: maxStartDate,
       onChange: (selectedDates) => {
         if (selectedDates[0]) {
           this._state.point.date_from = selectedDates[0].toISOString();
-          this.#dateToPicker.set('minDate', selectedDates[0]);
-          const endDate = this._state.point.date_to ? new Date(this._state.point.date_to) : null;
-          if (endDate && endDate < selectedDates[0]) {
-            this._state.point.date_to = selectedDates[0].toISOString();
-            this.#dateToPicker.setDate(selectedDates[0]);
-          }
+          this.#dateToPicker.set('minDate', new Date(selectedDates[0].getTime() + MIN_TRIP_DURATION_MS));
         }
       }
     });
@@ -124,6 +126,7 @@ export default class PointEditView extends AbstractStatefulView {
       onChange: (selectedDates) => {
         if (selectedDates[0]) {
           this._state.point.date_to = selectedDates[0].toISOString();
+          this.#dateFromPicker.set('maxDate', new Date(selectedDates[0].getTime() - MIN_TRIP_DURATION_MS));
         }
       }
     });
