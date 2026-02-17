@@ -63,7 +63,7 @@ export default class PointPresenter {
         getOffersByType: (type) => this.#offersModel.getOffersByType(type),
         getDestinations: () => this.#destinationsModel.getDestinations()
       },
-      () => this.#switchToViewMode(),
+      (formData) => this.#handleFormSubmit(formData),
       () => this.#switchToViewMode()
     );
 
@@ -79,6 +79,13 @@ export default class PointPresenter {
     }
     this.#onModeChange?.(this);
     this.#renderFormView();
+  }
+
+  #handleFormSubmit(formData) {
+    if (formData) {
+      this.#onDataChange?.(formData);
+    }
+    this.#switchToViewMode();
   }
 
   #switchToViewMode() {
