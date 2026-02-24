@@ -1,6 +1,6 @@
 import { toCapitalize, POINT_TYPES, formattedDateTimeForInput } from '../../utils';
 
-export const createPointEditTemplate = (point = {}, destination = null, availableOffers = [], destinations = [], selectedOfferIds = []) => {
+export const createPointEditTemplate = (point = {}, destination = null, availableOffers = [], destinations = [], selectedOfferIds = [], isAddMode = false) => {
   const type = point.type || 'flight';
   const destinationName = destination ? destination.name : '';
   const basePrice = point.base_price || '';
@@ -106,7 +106,7 @@ export const createPointEditTemplate = (point = {}, destination = null, availabl
           </div>
 
           <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-          <button class="event__reset-btn" type="reset">Delete</button>
+          <button class="event__reset-btn" type="button">${isAddMode ? 'Cancel' : 'Delete'}</button>
           <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">Open event</span>
           </button>

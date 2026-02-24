@@ -9,12 +9,14 @@ const MIN_TRIP_DURATION_MS = 60 * 1000;
 export default class PointEditView extends AbstractStatefulView {
   #onFormSubmit = null;
   #onFormClose = null;
+  #onDeleteClick = null;
   #handlersRestored = false;
   #model = null;
+  #isAddMode = false;
   #dateFromPicker = null;
   #dateToPicker = null;
 
-  constructor(point = {}, destination = null, model, onFormSubmit, onFormClose) {
+  constructor(point = {}, destination = null, model, onFormSubmit, onFormClose, isAddMode = false, onDeleteClick = null) {
     super();
     this._setState({
       point: { ...point },
@@ -23,6 +25,8 @@ export default class PointEditView extends AbstractStatefulView {
     this.#model = model;
     this.#onFormSubmit = onFormSubmit;
     this.#onFormClose = onFormClose;
+    this.#isAddMode = isAddMode;
+    this.#onDeleteClick = onDeleteClick;
   }
 
   get element() {
@@ -53,7 +57,8 @@ export default class PointEditView extends AbstractStatefulView {
       this._state.destination,
       availableOffers,
       destinations,
-      selectedOfferIds
+      selectedOfferIds,
+      this.#isAddMode
     );
   }
 
@@ -70,6 +75,11 @@ export default class PointEditView extends AbstractStatefulView {
       rollupButton.addEventListener('click', this.#rollupClickHandler);
     }
 
+    const resetButton = element.querySelector('.event__reset-btn');
+    if (resetButton) {
+      resetButton.addEventListener('click', this.#resetButtonHandler);
+    }
+
     const typeInputs = element.querySelectorAll('input[name="event-type"]');
     typeInputs.forEach((input) => {
       input.addEventListener('change', this.#typeChangeHandler);
@@ -78,6 +88,7 @@ export default class PointEditView extends AbstractStatefulView {
     const destinationInput = element.querySelector('.event__input--destination');
     if (destinationInput) {
       destinationInput.addEventListener('change', this.#destinationChangeHandler);
+      destinationInput.addEventListener('input', this.#destinationInputHandler);
     }
 
     const priceInput = element.querySelector('input[name="event-price"]');
@@ -148,16 +159,35 @@ export default class PointEditView extends AbstractStatefulView {
 
   #formSubmitHandler = (evt) => {
     evt.preventDefault();
+
+    const destinationInput = this.element?.querySelector('.event__input--destination');
+    if (destinationInput) {
+      const destinationName = destinationInput.value.trim();
+      const destinations = this.#model?.getDestinations() ?? [];
+      const isValidDestination = !destinationName || destinations.some((d) => d.name === destinationName);
+      if (!isValidDestination) {
+        destinationInput.setCustomValidity('Выберите пункт назначения из списка');
+        destinationInput.reportValidity();
+        return;
+      }
+    }
+
     this.#onFormSubmit?.(this.#getFormData());
   };
 
   #getFormData() {
     const priceInput = this.element?.querySelector('input[name="event-price"]');
-    const basePrice = priceInput ? parseInt(priceInput.value, 10) || 0 : this._state.point.base_price || 0;
+    const basePrice = priceInput ? parseInt(priceInput.value.replace(/\D/g, ''), 10) || 0 : this._state.point.base_price || 0;
+
+    const destinationInput = this.element?.querySelector('.event__input--destination');
+    const destinationName = destinationInput?.value?.trim();
+    const destinations = this.#model?.getDestinations() ?? [];
+    const destination = destinations.find((d) => d.name === destinationName);
+    const destinationId = destination?.id ?? this._state.destination?.id ?? this._state.point.destination;
 
     return {
       type: this._state.point.type || 'flight',
-      destination: this._state.destination?.id ?? this._state.point.destination,
+      destination: destinationId,
       date_from: this._state.point.date_from,
       date_to: this._state.point.date_to,
       base_price: basePrice,
@@ -168,6 +198,15 @@ export default class PointEditView extends AbstractStatefulView {
   #rollupClickHandler = (evt) => {
     evt.preventDefault();
     this.#onFormClose?.();
+  };
+
+  #resetButtonHandler = (evt) => {
+    evt.preventDefault();
+    if (this.#isAddMode) {
+      this.#onFormClose?.();
+    } else {
+      this.#onDeleteClick?.();
+    }
   };
 
   #typeChangeHandler = (evt) => {
@@ -182,23 +221,42 @@ export default class PointEditView extends AbstractStatefulView {
   };
 
   #destinationChangeHandler = (evt) => {
-    const destinationName = evt.target.value;
+    const destinationName = evt.target.value.trim();
     if (!this.#model) {
       return;
     }
 
     const destinations = this.#model.getDestinations();
-    const destination = destinations.find(dest => dest.name === destinationName);
+    const destination = destinations.find((dest) => dest.name === destinationName);
 
     if (destination) {
       this.updateElement({
         destination: destination
       });
+    } else if (destinationName === '') {
+      this._setState({ destination: null });
+    }
+  };
+
+  #destinationInputHandler = (evt) => {
+    const input = evt.target;
+    const destinations = this.#model?.getDestinations() ?? [];
+    const value = input.value;
+    const isValid = destinations.some((d) => d.name === value);
+    if (!isValid && value !== '') {
+      input.setCustomValidity('Выберите пункт назначения из списка');
+    } else {
+      input.setCustomValidity('');
     }
   };
 
   #priceChangeHandler = (evt) => {
-    const value = parseInt(evt.target.value, 10) || 0;
+    const input = evt.target;
+    const numericOnly = input.value.replace(/\D/g, '');
+    if (input.value !== numericOnly) {
+      input.value = numericOnly;
+    }
+    const value = parseInt(numericOnly, 10) || 0;
     this._setState({
       point: { ...this._state.point, base_price: value }
     });
