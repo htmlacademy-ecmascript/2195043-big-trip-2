@@ -1,5 +1,6 @@
 import PointView from '../view/point-view';
 import PointEditView from '../view/point-edit-view';
+import { UserAction } from '../utils';
 
 const PointMode = { VIEW: 'view', EDIT: 'edit' };
 
@@ -14,10 +15,12 @@ export default class PointPresenter {
   #offersModel = null;
   #onDataChange = null;
   #onModeChange = null;
+  #onAddFormClose = null;
   #mode = PointMode.VIEW;
   #escKeyDownHandler = null;
+  #isAddMode = false;
 
-  constructor({ container, point, destination, selectedOffers, destinationsModel, offersModel, onDataChange, onModeChange }) {
+  constructor({ container, point, destination, selectedOffers, destinationsModel, offersModel, onDataChange, onModeChange, onAddFormClose, isAddMode = false }) {
     this.#container = container;
     this.#point = point;
     this.#destination = destination;
@@ -26,15 +29,23 @@ export default class PointPresenter {
     this.#offersModel = offersModel;
     this.#onDataChange = onDataChange;
     this.#onModeChange = onModeChange;
+    this.#onAddFormClose = onAddFormClose;
+    this.#isAddMode = isAddMode;
     this.#escKeyDownHandler = this.#handleEscKeyDown.bind(this);
   }
 
   get pointId() {
-    return this.#point.id;
+    return this.#point?.id;
   }
 
   init() {
     this.#renderPointView();
+  }
+
+  initAddForm() {
+    this.#mode = PointMode.EDIT;
+    this.#renderFormView(true);
+    this.#setEventHandlers();
   }
 
   #renderPointView() {
@@ -55,7 +66,7 @@ export default class PointPresenter {
     this.#onDataChange?.({ is_favorite: !this.#point.is_favorite });
   }
 
-  #renderFormView() {
+  #renderFormView(isAddMode = false) {
     this.#formView = new PointEditView(
       this.#point,
       this.#destination,
@@ -63,8 +74,10 @@ export default class PointPresenter {
         getOffersByType: (type) => this.#offersModel.getOffersByType(type),
         getDestinations: () => this.#destinationsModel.getDestinations()
       },
-      (formData) => this.#handleFormSubmit(formData),
-      () => this.#switchToViewMode()
+      (formData) => this.#handleFormSubmit(formData, isAddMode),
+      () => this.#handleFormClose(isAddMode),
+      isAddMode,
+      () => this.#handleDeleteClick()
     );
 
     this.#clearContainer();
@@ -78,18 +91,33 @@ export default class PointPresenter {
       return;
     }
     this.#onModeChange?.(this);
-    this.#renderFormView();
+    this.#renderFormView(false);
   }
 
-  #handleFormSubmit(formData) {
-    if (formData) {
+  #handleFormSubmit(formData, isAddMode) {
+    if (isAddMode && formData) {
+      this.#onDataChange?.({ type: UserAction.ADD, payload: formData });
+    } else if (!isAddMode && formData) {
       this.#onDataChange?.(formData);
     }
-    this.#switchToViewMode();
+    this.#switchToViewMode(isAddMode);
   }
 
-  #switchToViewMode() {
-    if (this.#mode === PointMode.VIEW) {
+  #handleFormClose(isAddMode) {
+    this.#switchToViewMode(isAddMode);
+    if (isAddMode) {
+      this.#onAddFormClose?.();
+    }
+  }
+
+  #handleDeleteClick() {
+    if (this.#point?.id) {
+      this.#onDataChange?.({ type: UserAction.DELETE });
+    }
+  }
+
+  #switchToViewMode(isAddMode = false) {
+    if (this.#mode === PointMode.VIEW && !isAddMode) {
       return;
     }
 
@@ -99,7 +127,9 @@ export default class PointPresenter {
     }
 
     this.#removeEventHandlers();
-    this.#renderPointView();
+    if (!isAddMode) {
+      this.#renderPointView();
+    }
   }
 
   #clearContainer() {
@@ -119,7 +149,10 @@ export default class PointPresenter {
   #handleEscKeyDown(evt) {
     if (evt.key === 'Escape' || evt.key === 'Esc') {
       evt.preventDefault();
-      this.#switchToViewMode();
+      this.#switchToViewMode(this.#isAddMode);
+      if (this.#isAddMode) {
+        this.#onAddFormClose?.();
+      }
     }
   }
 
@@ -137,7 +170,7 @@ export default class PointPresenter {
 
   resetView() {
     if (this.#mode === PointMode.EDIT) {
-      this.#switchToViewMode();
+      this.#switchToViewMode(false);
     }
   }
 
@@ -146,9 +179,11 @@ export default class PointPresenter {
 
     if (this.#formView) {
       this.#formView.removeElement();
+      this.#formView = null;
     }
     if (this.#pointView) {
       this.#pointView.removeElement();
+      this.#pointView = null;
     }
   }
 }

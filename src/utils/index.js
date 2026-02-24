@@ -52,6 +52,12 @@ export const FilterType = {
   PAST: 'past'
 };
 
+export const UserAction = {
+  UPDATE: 'UPDATE',
+  ADD: 'ADD',
+  DELETE: 'DELETE'
+};
+
 export const isPointFuture = (point) => {
   const now = dayjs();
   return dayjs(point.date_from).isAfter(now);
