@@ -1,13 +1,20 @@
-import { mockDestinations } from '../mock/points';
+import { adaptDestinationsToApp } from '../api/adapters.js';
 
 export default class DestinationsModel {
   #destinations = [];
+  #api = null;
+
+  constructor(api) {
+    this.#api = api;
+  }
 
   async init() {
     try {
-      this.#destinations = [...mockDestinations];
+      const serverDestinations = await this.#api.getDestinations();
+      this.#destinations = adaptDestinationsToApp(serverDestinations);
     } catch (error) {
       this.#destinations = [];
+      throw error;
     }
   }
 
@@ -16,10 +23,10 @@ export default class DestinationsModel {
   }
 
   getDestinationById(id) {
-    return this.#destinations.find(dest => dest.id === id);
+    return this.#destinations.find((dest) => dest.id === id);
   }
 
   getDestinationByName(name) {
-    return this.#destinations.find(dest => dest.name === name);
+    return this.#destinations.find((dest) => dest.name === name);
   }
 }

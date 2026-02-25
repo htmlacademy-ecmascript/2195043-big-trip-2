@@ -101,7 +101,7 @@ export default class BoardPresenter {
       this.#listComponent.removeElement();
       this.#listComponent = null;
     }
-    
+
     while (this.container.firstChild) {
       this.container.firstChild.remove();
     }
@@ -146,7 +146,7 @@ export default class BoardPresenter {
     });
   }
 
-  #handlePointChange(pointId, action) {
+  async #handlePointChange(pointId, action) {
     switch (action?.type) {
       case UserAction.DELETE:
         this.#pointsModel.removePoint(pointId);
@@ -158,16 +158,24 @@ export default class BoardPresenter {
         break;
       default: {
         const patch = action?.type === UserAction.UPDATE ? action.payload : action;
-        if (!patch) return;
-        this.#pointsModel.patchPoint({ id: pointId, ...patch });
-        this.#onPointsChange?.();
-        const point = this.#pointsModel.getPoints().find((p) => p.id === pointId);
-        if (point) {
-          const presenter = this.#pointPresenters.get(pointId);
-          if (presenter) {
-            const { destination, selectedOffers } = this.#getPointData(point);
-            presenter.updatePoint(point, destination, selectedOffers);
+        if (!patch) {
+          return;
+        }
+        try {
+          await this.#pointsModel.updatePointOnServer(pointId, patch);
+          this.#onPointsChange?.();
+          const point = this.#pointsModel.getPoints().find((p) => p.id === pointId);
+          if (point) {
+            const presenter = this.#pointPresenters.get(pointId);
+            if (presenter) {
+              const { destination, selectedOffers } = this.#getPointData(point);
+              presenter.updatePoint(point, destination, selectedOffers);
+            }
           }
+          const currentPresenter = this.#pointPresenters.get(pointId);
+          currentPresenter?.resetView();
+        } catch {
+          // ошибки обработаю позже
         }
       }
     }
@@ -198,7 +206,7 @@ export default class BoardPresenter {
     const allPoints = this.#pointsModel.getPoints();
     const filteredPoints = filterPoints(allPoints, currentFilter);
     const sortedPoints = this.#sortPoints(filteredPoints);
-    
+
     this.#clearPoints();
     this.#clearListOnly();
     this.#renderPoints(sortedPoints);
@@ -254,7 +262,9 @@ export default class BoardPresenter {
   }
 
   #renderAddForm() {
-    if (this.#addFormPresenter) return;
+    if (this.#addFormPresenter) {
+      return;
+    }
 
     let listEl = this.container.querySelector('.trip-events__list');
     if (!listEl) {

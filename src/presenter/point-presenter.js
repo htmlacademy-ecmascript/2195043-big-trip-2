@@ -94,13 +94,17 @@ export default class PointPresenter {
     this.#renderFormView(false);
   }
 
-  #handleFormSubmit(formData, isAddMode) {
+  async #handleFormSubmit(formData, isAddMode) {
     if (isAddMode && formData) {
       this.#onDataChange?.({ type: UserAction.ADD, payload: formData });
+      this.#switchToViewMode(isAddMode);
     } else if (!isAddMode && formData) {
-      this.#onDataChange?.(formData);
+      const result = this.#onDataChange?.(formData);
+      if (result instanceof Promise) {
+        await result;
+      }
+      this.#switchToViewMode(false);
     }
-    this.#switchToViewMode(isAddMode);
   }
 
   #handleFormClose(isAddMode) {
