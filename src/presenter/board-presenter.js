@@ -277,7 +277,7 @@ export default class BoardPresenter {
     }
 
     this.#addFormContainerView = new PointItemContainerView();
-    render(this.#addFormContainerView, listEl);
+    render(this.#addFormContainerView, listEl, RenderPosition.AFTERBEGIN);
 
     const now = new Date();
     const defaultPoint = {
