@@ -1,5 +1,6 @@
 import FilterPresenter from './filter-presenter.js';
 import BoardPresenter from './board-presenter.js';
+import TripInfoPresenter from './trip-info-presenter.js';
 import PointsModel from '../model/points-model.js';
 import DestinationsModel from '../model/destinations-model.js';
 import OffersModel from '../model/offers-model.js';
@@ -9,9 +10,9 @@ import FailedLoadMessageView from '../view/failed-load-message-view/failed-load-
 import { render } from '../utils/render.js';
 import { FilterType } from '../utils';
 
-const pageMainElement = document.querySelector('.page-main');
-const tripEventsElement = pageMainElement.querySelector('.trip-events');
+const tripEventsElement = document.querySelector('.page-main')?.querySelector('.trip-events');
 const filtersElement = document.querySelector('.trip-controls__filters');
+const tripMainElement = document.querySelector('.trip-main');
 const newEventButton = document.querySelector('.trip-main__event-add-btn');
 
 export default class MainPresenter {
@@ -20,12 +21,20 @@ export default class MainPresenter {
   #offersModel;
   #filterPresenter;
   #boardPresenter;
+  #tripInfoPresenter;
 
   constructor(api) {
     const pointsModel = new PointsModel(api);
     const destinationsModel = new DestinationsModel(api);
     const offersModel = new OffersModel(api);
     const filterModel = new FilterModel();
+
+    this.#tripInfoPresenter = new TripInfoPresenter({
+      container: tripMainElement,
+      pointsModel,
+      destinationsModel,
+      filterModel
+    });
 
     this.#filterPresenter = new FilterPresenter({
       container: filtersElement,
@@ -41,11 +50,15 @@ export default class MainPresenter {
       filterModel,
       newEventButton,
       onResetFilter: () => this.#filterPresenter.setFilter(FilterType.EVERYTHING),
-      onPointsChange: () => this.#filterPresenter.setFilter()
+      onPointsChange: () => {
+        this.#filterPresenter.setFilter();
+        this.#tripInfoPresenter.update();
+      }
     });
 
     this.#filterPresenter.onFilterChange = () => {
       this.#boardPresenter.setFilter();
+      this.#tripInfoPresenter.update();
     };
 
     this.#pointsModel = pointsModel;
@@ -73,5 +86,6 @@ export default class MainPresenter {
     loadingView.removeElement();
     this.#filterPresenter.init();
     this.#boardPresenter.init();
+    this.#tripInfoPresenter.init();
   }
 }

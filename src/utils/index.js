@@ -18,6 +18,18 @@ export const formatDateTime = (date, format) => {
 
 export const formattedDate = (date) => formatDateTime(date, DATE_FORMAT);
 
+export const formatDateRange = (dateFrom, dateTo) => {
+  if (!dateFrom || !dateTo) {
+    return '';
+  }
+  const from = dayjs(dateFrom);
+  const to = dayjs(dateTo);
+  const sameMonth = from.format('MMM') === to.format('MMM');
+  const firstPart = sameMonth ? from.format('D') : from.format('D MMM');
+  const secondPart = to.format('D MMM');
+  return `${firstPart}&nbsp;&mdash;&nbsp;${secondPart}`;
+};
+
 export const formattedTime = (date) => formatDateTime(date, TIME_FORMAT);
 
 export const formattedDateTimeForInput = (date) => formatDateTime(date, DATETIME_INPUT_FORMAT);
