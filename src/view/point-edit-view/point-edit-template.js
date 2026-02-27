@@ -9,18 +9,18 @@ export const createPointEditTemplate = (point = {}, destination = null, availabl
   const description = destination ? destination.description : '';
   const pictures = destination ? destination.pictures : [];
 
-  const typeOptions = POINT_TYPES.map(pointType => `
+  const typeOptions = POINT_TYPES.map((pointType) => `
     <div class="event__type-item">
       <input id="event-type-${pointType}-1" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${pointType}" ${pointType === type ? 'checked' : ''}>
       <label class="event__type-label  event__type-label--${pointType}" for="event-type-${pointType}-1">${toCapitalize(pointType)}</label>
     </div>
   `).join('');
 
-  const destinationOptions = destinations.map(dest => `
+  const destinationOptions = destinations.map((dest) => `
     <option value="${dest.name}"></option>
   `).join('');
 
-  const offersList = availableOffers.length > 0 ? availableOffers.map(offer => {
+  const offersList = availableOffers.length > 0 ? availableOffers.map((offer) => {
     const isChecked = selectedOfferIds.includes(offer.id);
     const offerId = `event-offer-${offer.id}`;
     return `
@@ -42,7 +42,7 @@ export const createPointEditTemplate = (point = {}, destination = null, availabl
       ${pictures.length > 0 ? `
         <div class="event__photos-container">
           <div class="event__photos-tape">
-            ${pictures.map(pic => `
+            ${pictures.map((pic) => `
               <img class="event__photo" src="${pic.src}" alt="${pic.description}">
             `).join('')}
           </div>
