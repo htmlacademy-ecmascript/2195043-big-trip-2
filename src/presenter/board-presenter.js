@@ -3,8 +3,12 @@ import ListView from '../view/list-view';
 import EmptyListMessageView from '../view/empty-list-message-view';
 import PointItemContainerView from '../view/point-item-container-view';
 import PointPresenter from './point-presenter.js';
+import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
 import { render, RenderPosition } from '../utils/render.js';
 import { FilterType, filterPoints, UserAction } from '../utils';
+
+const UI_BLOCKER_LOWER_LIMIT = 0;
+const UI_BLOCKER_UPPER_LIMIT = 300;
 
 export default class BoardPresenter {
   #sortComponent = null;
@@ -20,6 +24,7 @@ export default class BoardPresenter {
   #currentSortType = 'day';
   #addFormPresenter = null;
   #addFormContainerView = null;
+  #uiBlocker = null;
 
   constructor({ container, pointsModel, destinationsModel, offersModel, filterModel, newEventButton, onResetFilter, onPointsChange }) {
     this.container = container;
@@ -30,6 +35,7 @@ export default class BoardPresenter {
     this.#newEventButton = newEventButton;
     this.#onResetFilter = onResetFilter;
     this.#onPointsChange = onPointsChange;
+    this.#uiBlocker = new UiBlocker({ lowerLimit: UI_BLOCKER_LOWER_LIMIT, upperLimit: UI_BLOCKER_UPPER_LIMIT });
   }
 
   #renderBoard() {
@@ -147,35 +153,51 @@ export default class BoardPresenter {
   }
 
   async #handlePointChange(pointId, action) {
+    const presenter = this.#pointPresenters.get(pointId);
+
     switch (action?.type) {
       case UserAction.DELETE:
-        this.#pointsModel.removePoint(pointId);
-        this.#pointPresenters.get(pointId)?.destroy();
-        this.#pointPresenters.delete(pointId);
-        this.#onPointsChange?.();
-        this.#clearListOnly();
-        this.#renderBoard();
+        presenter?.setFormState({ isDeleting: true });
+        this.#uiBlocker.block();
+        try {
+          await this.#pointsModel.deletePointOnServer(pointId);
+          this.#pointPresenters.get(pointId)?.destroy();
+          this.#pointPresenters.delete(pointId);
+          this.#onPointsChange?.();
+          this.#clearListOnly();
+          this.#renderBoard();
+        } catch {
+          presenter?.setFormState({ isDeleting: false });
+          presenter?.shakeForm();
+        } finally {
+          this.#uiBlocker.unblock();
+        }
         break;
       default: {
         const patch = action?.type === UserAction.UPDATE ? action.payload : action;
         if (!patch) {
           return;
         }
+        presenter?.setFormState({ isSaving: true });
+        this.#uiBlocker.block();
         try {
           await this.#pointsModel.updatePointOnServer(pointId, patch);
           this.#onPointsChange?.();
           const point = this.#pointsModel.getPoints().find((p) => p.id === pointId);
           if (point) {
-            const presenter = this.#pointPresenters.get(pointId);
-            if (presenter) {
+            const currentPresenter = this.#pointPresenters.get(pointId);
+            if (currentPresenter) {
               const { destination, selectedOffers } = this.#getPointData(point);
-              presenter.updatePoint(point, destination, selectedOffers);
+              currentPresenter.updatePoint(point, destination, selectedOffers);
             }
           }
-          const currentPresenter = this.#pointPresenters.get(pointId);
-          currentPresenter?.resetView();
+          presenter?.setFormState({ isSaving: false });
+          presenter?.resetView();
         } catch {
-          // ошибки обработаю позже
+          presenter?.setFormState({ isSaving: false });
+          presenter?.shakeForm();
+        } finally {
+          this.#uiBlocker.unblock();
         }
       }
     }
@@ -304,20 +326,28 @@ export default class BoardPresenter {
     this.#newEventButton.disabled = true;
   }
 
-  #handleAddFormSubmit(action) {
-    if (action?.type === UserAction.ADD && action.payload) {
-      const newPoint = {
-        id: crypto.randomUUID(),
-        ...action.payload,
-        is_favorite: false
-      };
-      this.#pointsModel.addPoint(newPoint);
+  async #handleAddFormSubmit(action) {
+    if (action?.type !== UserAction.ADD || !action.payload) {
+      return;
+    }
+
+    this.#addFormPresenter?.setFormState({ isSaving: true });
+    this.#uiBlocker.block();
+
+    try {
+      const data = { ...action.payload, is_favorite: false };
+      const newPoint = await this.#pointsModel.createPointOnServer(data);
       const sorted = this.#sortPoints(this.#pointsModel.getPoints());
       this.#pointsModel.setPoints(sorted);
       this.#onPointsChange?.();
+      this.#handleAddFormClose();
+      this.#renderBoard();
+    } catch {
+      this.#addFormPresenter?.setFormState({ isSaving: false });
+      this.#addFormPresenter?.shakeForm();
+    } finally {
+      this.#uiBlocker.unblock();
     }
-    this.#handleAddFormClose();
-    this.#renderBoard();
   }
 
   #handleAddFormClose() {

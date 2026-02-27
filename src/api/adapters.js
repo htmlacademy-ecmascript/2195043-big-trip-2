@@ -40,3 +40,13 @@ export const adaptPointToServer = (appPoint) => ({
   offers: Array.isArray(appPoint.offers) ? [...appPoint.offers] : [],
   type: appPoint.type
 });
+
+export const adaptPointToServerForCreate = (appPoint) => ({
+  base_price: appPoint.base_price,
+  date_from: appPoint.date_from,
+  date_to: appPoint.date_to,
+  destination: appPoint.destination,
+  is_favorite: appPoint.is_favorite ?? false,
+  offers: Array.isArray(appPoint.offers) ? [...appPoint.offers] : [],
+  type: appPoint.type
+});

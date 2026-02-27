@@ -1,4 +1,4 @@
-import { adaptPointsToApp, adaptPointToServer } from '../api/adapters.js';
+import { adaptPointsToApp, adaptPointToServer, adaptPointToServerForCreate } from '../api/adapters.js';
 
 export default class PointsModel {
   #points = [];
@@ -47,8 +47,21 @@ export default class PointsModel {
     return adapted;
   }
 
+  async createPointOnServer(data) {
+    const serverData = adaptPointToServerForCreate(data);
+    const serverPoint = await this.#api.createPoint(serverData);
+    const adapted = adaptPointsToApp([serverPoint])[0];
+    this.#points.push(adapted);
+    return adapted;
+  }
+
   addPoint(point) {
     this.#points.push(point);
+  }
+
+  async deletePointOnServer(pointId) {
+    await this.#api.deletePoint(pointId);
+    this.#points = this.#points.filter((point) => point.id !== pointId);
   }
 
   removePoint(id) {

@@ -96,14 +96,15 @@ export default class PointPresenter {
 
   async #handleFormSubmit(formData, isAddMode) {
     if (isAddMode && formData) {
-      this.#onDataChange?.({ type: UserAction.ADD, payload: formData });
-      this.#switchToViewMode(isAddMode);
+       const result = this.#onDataChange?.({ type: UserAction.ADD, payload: formData });
+      if (result instanceof Promise) {
+        await result;
+      }
     } else if (!isAddMode && formData) {
       const result = this.#onDataChange?.(formData);
       if (result instanceof Promise) {
         await result;
       }
-      this.#switchToViewMode(false);
     }
   }
 
@@ -114,9 +115,12 @@ export default class PointPresenter {
     }
   }
 
-  #handleDeleteClick() {
+  async #handleDeleteClick() {
     if (this.#point?.id) {
-      this.#onDataChange?.({ type: UserAction.DELETE });
+      const result = this.#onDataChange?.({ type: UserAction.DELETE });
+      if (result instanceof Promise) {
+        await result;
+      }
     }
   }
 
@@ -170,6 +174,14 @@ export default class PointPresenter {
       this.#pointView = null;
       this.#renderPointView();
     }
+  }
+
+  setFormState({ isSaving = false, isDeleting = false } = {}) {
+    this.#formView?.updateElement({ isSaving, isDeleting });
+  }
+
+  shakeForm() {
+    this.#formView?.shake();
   }
 
   resetView() {

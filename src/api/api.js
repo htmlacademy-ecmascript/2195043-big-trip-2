@@ -10,6 +10,9 @@ const handleResponse = (response) => {
   if (!response.ok) {
     throw new Error(`Статус ошибки: ${response.status}`);
   }
+  if (response.status === 204) {
+    return null;
+  }
   return response.json();
 };
 
@@ -40,6 +43,23 @@ export default class Api {
       method: 'PUT',
       headers: createHeaders(),
       body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  }
+
+  async createPoint(data) {
+    const response = await fetch(`${BASE_URL}/points`, {
+      method: 'POST',
+      headers: createHeaders(),
+      body: JSON.stringify(data)
+    });
+    return handleResponse(response);
+  }
+
+  async deletePoint(pointId) {
+    const response = await fetch(`${BASE_URL}/points/${pointId}`, {
+      method: 'DELETE',
+      headers: createHeaders()
     });
     return handleResponse(response);
   }

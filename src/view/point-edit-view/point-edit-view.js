@@ -20,7 +20,9 @@ export default class PointEditView extends AbstractStatefulView {
     super();
     this._setState({
       point: { ...point },
-      destination: destination
+      destination: destination,
+      isSaving: false,
+      isDeleting: false
     });
     this.#model = model;
     this.#onFormSubmit = onFormSubmit;
@@ -58,7 +60,9 @@ export default class PointEditView extends AbstractStatefulView {
       availableOffers,
       destinations,
       selectedOfferIds,
-      this.#isAddMode
+      this.#isAddMode,
+      this._state.isSaving ?? false,
+      this._state.isDeleting ?? false
     );
   }
 
