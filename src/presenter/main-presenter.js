@@ -77,12 +77,20 @@ export default class MainPresenter {
         this.#offersModel.init()
       ]);
     } catch {
+      const loadingEl = loadingView.element;
+      if (loadingEl?.parentNode) {
+        loadingEl.remove();
+      }
       loadingView.removeElement();
       const failedView = new FailedLoadMessageView();
       render(failedView, tripEventsElement);
       return;
     }
 
+    const loadingEl = loadingView.element;
+    if (loadingEl?.parentNode) {
+      loadingEl.remove();
+    }
     loadingView.removeElement();
     this.#filterPresenter.init();
     this.#boardPresenter.init();
