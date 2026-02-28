@@ -356,6 +356,7 @@ export default class BoardPresenter {
     this.#addFormContainerView?.element?.remove();
     this.#addFormContainerView = null;
     this.#newEventButton.disabled = false;
+    this.#renderBoard();
   }
 
   destroy() {
