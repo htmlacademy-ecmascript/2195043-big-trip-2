@@ -98,7 +98,7 @@ export const getFilterAvailability = (points) => {
   const hasPresent = points.some(isPointPresent);
 
   return {
-    [FilterType.EVERYTHING]: true,
+    [FilterType.EVERYTHING]: points.length > 0,
     [FilterType.FUTURE]: hasFuture,
     [FilterType.PAST]: hasPast,
     [FilterType.PRESENT]: hasPresent

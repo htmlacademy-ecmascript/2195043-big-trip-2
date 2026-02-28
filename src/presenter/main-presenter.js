@@ -33,6 +33,7 @@ export default class MainPresenter {
       container: tripMainElement,
       pointsModel,
       destinationsModel,
+      offersModel,
       filterModel
     });
 
