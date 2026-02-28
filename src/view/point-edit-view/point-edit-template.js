@@ -105,8 +105,8 @@ export const createPointEditTemplate = (point = {}, destination = null, availabl
             <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit" ${isSaving || isDeleting ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
-          <button class="event__reset-btn" type="button" ${isSaving || isDeleting ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : (isAddMode ? 'Cancel' : 'Delete')}</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit">${isSaving ? 'Saving...' : 'Save'}</button>
+          <button class="event__reset-btn" type="button">${isDeleting ? 'Deleting...' : (isAddMode ? 'Cancel' : 'Delete')}</button>
           <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">Open event</span>
           </button>
