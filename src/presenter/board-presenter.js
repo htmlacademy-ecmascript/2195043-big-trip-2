@@ -205,7 +205,7 @@ export default class BoardPresenter {
 
   #handleModeChange(currentPresenter) {
     if (this.#addFormPresenter) {
-      this.#handleAddFormClose();
+      this.#handleAddFormClose(false);
     }
     this.#resetAllPointsToViewMode(currentPresenter);
   }
@@ -340,7 +340,7 @@ export default class BoardPresenter {
       const sorted = this.#sortPoints(this.#pointsModel.getPoints());
       this.#pointsModel.setPoints(sorted);
       this.#onPointsChange?.();
-      this.#handleAddFormClose();
+      this.#handleAddFormClose(false);
       this.#renderBoard();
     } catch {
       this.#addFormPresenter?.setFormState({ isSaving: false });
@@ -350,13 +350,15 @@ export default class BoardPresenter {
     }
   }
 
-  #handleAddFormClose() {
+  #handleAddFormClose(reRender = true) {
     this.#addFormPresenter?.destroy();
     this.#addFormPresenter = null;
     this.#addFormContainerView?.element?.remove();
     this.#addFormContainerView = null;
     this.#newEventButton.disabled = false;
-    this.#renderBoard();
+    if (reRender) {
+      this.#renderBoard();
+    }
   }
 
   destroy() {
