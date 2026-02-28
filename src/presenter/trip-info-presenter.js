@@ -1,6 +1,6 @@
 import TripInfoView from '../view/trip-info-view/trip-info-view.js';
 import { render, RenderPosition } from '../utils/render.js';
-import { FilterType, filterPoints, formatDateRange } from '../utils';
+import { formatDateRange } from '../utils';
 
 const DESTINATIONS_SEPARATOR = ' &mdash; ';
 const MAX_DESTINATIONS_FULL = 3;
@@ -9,13 +9,15 @@ export default class TripInfoPresenter {
   #container = null;
   #pointsModel = null;
   #destinationsModel = null;
+  #offersModel = null;
   #filterModel = null;
   #tripInfoView = null;
 
-  constructor({ container, pointsModel, destinationsModel, filterModel }) {
+  constructor({ container, pointsModel, destinationsModel, offersModel, filterModel }) {
     this.#container = container;
     this.#pointsModel = pointsModel;
     this.#destinationsModel = destinationsModel;
+    this.#offersModel = offersModel;
     this.#filterModel = filterModel;
   }
 
@@ -25,9 +27,7 @@ export default class TripInfoPresenter {
 
   update() {
     const allPoints = this.#pointsModel.getPoints();
-    const currentFilter = this.#filterModel?.getFilter() ?? FilterType.EVERYTHING;
-    const filteredPoints = filterPoints(allPoints, currentFilter);
-    const sortedPoints = [...filteredPoints].sort(
+    const sortedPoints = [...allPoints].sort(
       (a, b) => new Date(a.date_from) - new Date(b.date_from)
     );
 
@@ -64,7 +64,15 @@ export default class TripInfoPresenter {
       sortedPoints[0].date_from,
       sortedPoints[sortedPoints.length - 1].date_to
     );
-    const cost = sortedPoints.reduce((sum, p) => sum + (p.base_price || 0), 0);
+    const cost = sortedPoints.reduce((sum, point) => {
+      const pointBase = point.base_price || 0;
+      const offersForType = this.#offersModel?.getOffersByType(point.type) ?? [];
+      const offersSum = (point.offers || []).reduce((offerSum, offerId) => {
+        const offer = offersForType.find((o) => o.id === offerId);
+        return offerSum + (offer?.price ?? 0);
+      }, 0);
+      return sum + pointBase + offersSum;
+    }, 0);
 
     this.#tripInfoView = new TripInfoView({ title, dates, cost });
     render(this.#tripInfoView, this.#container, RenderPosition.AFTERBEGIN);

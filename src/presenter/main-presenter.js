@@ -33,6 +33,7 @@ export default class MainPresenter {
       container: tripMainElement,
       pointsModel,
       destinationsModel,
+      offersModel,
       filterModel
     });
 
@@ -70,13 +71,13 @@ export default class MainPresenter {
     const loadingView = new LoadingMessageView();
     render(loadingView, tripEventsElement);
 
-    try {
-      await Promise.all([
-        this.#pointsModel.init(),
-        this.#destinationsModel.init(),
-        this.#offersModel.init()
-      ]);
-    } catch {
+    const results = await Promise.allSettled([
+      this.#pointsModel.init(),
+      this.#destinationsModel.init(),
+      this.#offersModel.init()
+    ]);
+    const hasError = results.some((r) => r.status === 'rejected');
+    if (hasError) {
       const loadingEl = loadingView.element;
       if (loadingEl?.parentNode) {
         loadingEl.remove();

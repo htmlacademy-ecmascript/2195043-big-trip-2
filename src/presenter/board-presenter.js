@@ -205,7 +205,7 @@ export default class BoardPresenter {
 
   #handleModeChange(currentPresenter) {
     if (this.#addFormPresenter) {
-      this.#handleAddFormClose();
+      this.#handleAddFormClose(false);
     }
     this.#resetAllPointsToViewMode(currentPresenter);
   }
@@ -275,6 +275,7 @@ export default class BoardPresenter {
     this.#onResetFilter?.();
     this.#filterModel?.setFilter(FilterType.EVERYTHING);
     this.#currentSortType = 'day';
+    this.#sortComponent?.updateElement({ currentSortType: 'day' });
     this.#closeAllForms();
     this.#renderAddForm();
   };
@@ -301,11 +302,10 @@ export default class BoardPresenter {
     this.#addFormContainerView = new PointItemContainerView();
     render(this.#addFormContainerView, listEl, RenderPosition.AFTERBEGIN);
 
-    const now = new Date();
     const defaultPoint = {
       type: 'flight',
-      date_from: now.toISOString(),
-      date_to: new Date(now.getTime() + 60 * 60 * 1000).toISOString(),
+      date_from: null,
+      date_to: null,
       base_price: 0,
       offers: []
     };
@@ -335,12 +335,12 @@ export default class BoardPresenter {
     this.#uiBlocker.block();
 
     try {
-      const data = { ...action.payload, is_favorite: false };
-      const newPoint = await this.#pointsModel.createPointOnServer(data);
+      //const data = { ...action.payload, is_favorite: false };
+      //const newPoint = await this.#pointsModel.createPointOnServer(data);
       const sorted = this.#sortPoints(this.#pointsModel.getPoints());
       this.#pointsModel.setPoints(sorted);
       this.#onPointsChange?.();
-      this.#handleAddFormClose();
+      this.#handleAddFormClose(false);
       this.#renderBoard();
     } catch {
       this.#addFormPresenter?.setFormState({ isSaving: false });
@@ -350,12 +350,15 @@ export default class BoardPresenter {
     }
   }
 
-  #handleAddFormClose() {
+  #handleAddFormClose(reRender = true) {
     this.#addFormPresenter?.destroy();
     this.#addFormPresenter = null;
     this.#addFormContainerView?.element?.remove();
     this.#addFormContainerView = null;
     this.#newEventButton.disabled = false;
+    if (reRender) {
+      this.#renderBoard();
+    }
   }
 
   destroy() {

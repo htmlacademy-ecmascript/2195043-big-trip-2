@@ -181,7 +181,12 @@ export default class PointPresenter {
   }
 
   shakeForm() {
-    this.#formView?.shake();
+    if (this.#mode === PointMode.VIEW) {
+      this.#container.classList.add('shake');
+      setTimeout(() => this.#container.classList.remove('shake'), 600);
+    } else {
+      this.#formView?.shake();
+    }
   }
 
   resetView() {

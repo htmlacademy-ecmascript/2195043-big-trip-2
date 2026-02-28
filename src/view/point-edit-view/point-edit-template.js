@@ -3,7 +3,7 @@ import { toCapitalize, POINT_TYPES, formattedDateTimeForInput } from '../../util
 export const createPointEditTemplate = (point = {}, destination = null, availableOffers = [], destinations = [], selectedOfferIds = [], isAddMode = false, isSaving = false, isDeleting = false) => {
   const type = point.type || 'flight';
   const destinationName = destination ? destination.name : '';
-  const basePrice = point.base_price || '';
+  const basePrice = (point.base_price === undefined || point.base_price === null) ? '' : point.base_price;
   const dateFrom = formattedDateTimeForInput(point.date_from);
   const dateTo = formattedDateTimeForInput(point.date_to);
   const description = destination ? destination.description : '';
@@ -105,8 +105,8 @@ export const createPointEditTemplate = (point = {}, destination = null, availabl
             <input class="event__input  event__input--price" id="event-price-1" type="text" name="event-price" value="${basePrice}">
           </div>
 
-          <button class="event__save-btn  btn  btn--blue" type="submit" ${isSaving || isDeleting ? 'disabled' : ''}>${isSaving ? 'Saving...' : 'Save'}</button>
-          <button class="event__reset-btn" type="button" ${isSaving || isDeleting ? 'disabled' : ''}>${isDeleting ? 'Deleting...' : (isAddMode ? 'Cancel' : 'Delete')}</button>
+          <button class="event__save-btn  btn  btn--blue" type="submit">${isSaving ? 'Saving...' : 'Save'}</button>
+          <button class="event__reset-btn" type="button">${isDeleting ? 'Deleting...' : (isAddMode ? 'Cancel' : 'Delete')}</button>
           <button class="event__rollup-btn" type="button">
             <span class="visually-hidden">Open event</span>
           </button>
