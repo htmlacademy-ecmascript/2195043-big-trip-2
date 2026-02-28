@@ -39,13 +39,18 @@ export const getDuration = (dateFrom, dateTo) => {
   const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
   const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
+  const pad = (n) => String(n).padStart(2, '0');
+  const d = pad(days);
+  const h = pad(hours);
+  const m = pad(minutes);
+
   if (days > 0) {
-    return `${days}D ${hours}H ${minutes}M`;
+    return `${d}D ${h}H ${m}M`;
   }
   if (hours > 0) {
-    return `${hours}H ${minutes}M`;
+    return `${h}H ${m}M`;
   }
-  return `${minutes}M`;
+  return `${m}M`;
 };
 
 export const POINT_TYPES = ['taxi', 'bus', 'train', 'ship', 'drive', 'flight', 'check-in', 'sightseeing', 'restaurant'];
