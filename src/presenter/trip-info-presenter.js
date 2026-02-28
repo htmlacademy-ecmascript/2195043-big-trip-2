@@ -1,6 +1,6 @@
 import TripInfoView from '../view/trip-info-view/trip-info-view.js';
 import { render, RenderPosition } from '../utils/render.js';
-import { FilterType, filterPoints, formatDateRange } from '../utils';
+import { formatDateRange } from '../utils';
 
 const DESTINATIONS_SEPARATOR = ' &mdash; ';
 const MAX_DESTINATIONS_FULL = 3;
@@ -25,9 +25,7 @@ export default class TripInfoPresenter {
 
   update() {
     const allPoints = this.#pointsModel.getPoints();
-    const currentFilter = this.#filterModel?.getFilter() ?? FilterType.EVERYTHING;
-    const filteredPoints = filterPoints(allPoints, currentFilter);
-    const sortedPoints = [...filteredPoints].sort(
+    const sortedPoints = [...allPoints].sort(
       (a, b) => new Date(a.date_from) - new Date(b.date_from)
     );
 

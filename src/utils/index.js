@@ -24,8 +24,7 @@ export const formatDateRange = (dateFrom, dateTo) => {
   }
   const from = dayjs(dateFrom);
   const to = dayjs(dateTo);
-  const sameMonth = from.format('MMM') === to.format('MMM');
-  const firstPart = sameMonth ? from.format('D') : from.format('D MMM');
+  const firstPart = from.format('D MMM');
   const secondPart = to.format('D MMM');
   return `${firstPart}&nbsp;&mdash;&nbsp;${secondPart}`;
 };
