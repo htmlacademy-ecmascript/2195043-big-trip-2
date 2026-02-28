@@ -275,6 +275,7 @@ export default class BoardPresenter {
     this.#onResetFilter?.();
     this.#filterModel?.setFilter(FilterType.EVERYTHING);
     this.#currentSortType = 'day';
+    this.#sortComponent?.updateElement({ currentSortType: 'day' });
     this.#closeAllForms();
     this.#renderAddForm();
   };
@@ -301,11 +302,10 @@ export default class BoardPresenter {
     this.#addFormContainerView = new PointItemContainerView();
     render(this.#addFormContainerView, listEl, RenderPosition.AFTERBEGIN);
 
-    const now = new Date();
     const defaultPoint = {
       type: 'flight',
-      date_from: now.toISOString(),
-      date_to: new Date(now.getTime() + 60 * 60 * 1000).toISOString(),
+      date_from: null,
+      date_to: null,
       base_price: 0,
       offers: []
     };

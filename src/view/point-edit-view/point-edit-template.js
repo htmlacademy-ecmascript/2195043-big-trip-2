@@ -3,7 +3,7 @@ import { toCapitalize, POINT_TYPES, formattedDateTimeForInput } from '../../util
 export const createPointEditTemplate = (point = {}, destination = null, availableOffers = [], destinations = [], selectedOfferIds = [], isAddMode = false, isSaving = false, isDeleting = false) => {
   const type = point.type || 'flight';
   const destinationName = destination ? destination.name : '';
-  const basePrice = point.base_price || '';
+  const basePrice = (point.base_price === undefined || point.base_price === null) ? '' : point.base_price;
   const dateFrom = formattedDateTimeForInput(point.date_from);
   const dateTo = formattedDateTimeForInput(point.date_to);
   const description = destination ? destination.description : '';
