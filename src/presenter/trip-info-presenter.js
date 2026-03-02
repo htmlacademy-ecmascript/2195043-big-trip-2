@@ -28,13 +28,13 @@ export default class TripInfoPresenter {
   update() {
     const allPoints = this.#pointsModel.getPoints();
     const sortedPoints = [...allPoints].sort(
-      (a, b) => new Date(a.date_from) - new Date(b.date_from)
+      (firstPoint, secondPoint) => new Date(firstPoint.date_from) - new Date(secondPoint.date_from)
     );
 
     if (this.#tripInfoView) {
-      const el = this.#tripInfoView.element;
-      if (el?.parentNode) {
-        el.remove();
+      const element = this.#tripInfoView.element;
+      if (element?.parentNode) {
+        element.remove();
       }
       this.#tripInfoView.removeElement();
       this.#tripInfoView = null;

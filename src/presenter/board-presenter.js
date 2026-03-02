@@ -239,21 +239,21 @@ export default class BoardPresenter {
 
     switch (this.#currentSortType) {
       case 'day':
-        sortedPoints.sort((a, b) => {
-          const dateA = new Date(a.date_from);
-          const dateB = new Date(b.date_from);
-          return dateA - dateB;
+        sortedPoints.sort((firstPoint, secondPoint) => {
+          const dateFirst = new Date(firstPoint.date_from);
+          const dateSecond = new Date(secondPoint.date_from);
+          return dateFirst - dateSecond;
         });
         break;
       case 'time':
-        sortedPoints.sort((a, b) => {
-          const durationA = new Date(a.date_to) - new Date(a.date_from);
-          const durationB = new Date(b.date_to) - new Date(b.date_from);
-          return durationB - durationA;
+        sortedPoints.sort((firstPoint, secondPoint) => {
+          const durationFirst = new Date(firstPoint.date_to) - new Date(firstPoint.date_from);
+          const durationSecond = new Date(secondPoint.date_to) - new Date(secondPoint.date_from);
+          return durationSecond - durationFirst;
         });
         break;
       case 'price':
-        sortedPoints.sort((a, b) => b.base_price - a.base_price);
+        sortedPoints.sort((firstPoint, secondPoint) => secondPoint.base_price - firstPoint.base_price);
         break;
       default:
         break;
