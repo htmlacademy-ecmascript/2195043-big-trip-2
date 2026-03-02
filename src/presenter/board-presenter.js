@@ -4,7 +4,7 @@ import EmptyListMessageView from '../view/empty-list-message-view';
 import PointItemContainerView from '../view/point-item-container-view';
 import PointPresenter from './point-presenter.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
-import { render, RenderPosition } from '../utils/render.js';
+import { render, RenderPosition } from '../framework/render.js';
 import { FilterType, filterPoints, UserAction } from '../utils';
 
 const UI_BLOCKER_LOWER_LIMIT = 0;

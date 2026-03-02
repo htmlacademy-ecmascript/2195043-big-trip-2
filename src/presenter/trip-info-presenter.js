@@ -1,5 +1,5 @@
 import TripInfoView from '../view/trip-info-view/trip-info-view.js';
-import { render, RenderPosition } from '../utils/render.js';
+import { render, RenderPosition } from '../framework/render.js';
 import { formatDateRange } from '../utils';
 
 const DESTINATIONS_SEPARATOR = ' &mdash; ';
