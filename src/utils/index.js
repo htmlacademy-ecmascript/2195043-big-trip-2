@@ -4,9 +4,9 @@ const DATE_FORMAT = 'MMM D';
 const TIME_FORMAT = 'HH:mm';
 const DATETIME_INPUT_FORMAT = 'DD/MM/YY HH:mm';
 
-export const toCapitalize = (string) => {
-  const s = string.toLowerCase();
-  return `${s.charAt(0).toUpperCase()}${s.slice(1)}`;
+export const toCapitalize = (text) => {
+  const lowercasedText = text.toLowerCase();
+  return `${lowercasedText.charAt(0).toUpperCase()}${lowercasedText.slice(1)}`;
 };
 
 export const formatDateTime = (date, format) => {
