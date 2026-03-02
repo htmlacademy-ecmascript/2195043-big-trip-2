@@ -167,8 +167,7 @@ export default class PointEditView extends AbstractStatefulView {
     const destinationInput = this.element?.querySelector('.event__input--destination');
     if (destinationInput) {
       const destinationName = destinationInput.value.trim();
-      const destinations = this.#model?.getDestinations() ?? [];
-      const isValidDestination = !destinationName || destinations.some((d) => d.name === destinationName);
+      const isValidDestination = !destinationName || this.#model?.getDestinationByName(destinationName);
       if (!isValidDestination) {
         destinationInput.setCustomValidity('Выберите пункт назначения из списка');
         destinationInput.reportValidity();
@@ -185,8 +184,7 @@ export default class PointEditView extends AbstractStatefulView {
 
     const destinationInput = this.element?.querySelector('.event__input--destination');
     const destinationName = destinationInput?.value?.trim();
-    const destinations = this.#model?.getDestinations() ?? [];
-    const destination = destinations.find((d) => d.name === destinationName);
+    const destination = this.#model?.getDestinationByName(destinationName);
     const destinationId = destination?.id ?? this._state.destination?.id ?? this._state.point.destination;
 
     return {
@@ -230,8 +228,7 @@ export default class PointEditView extends AbstractStatefulView {
       return;
     }
 
-    const destinations = this.#model.getDestinations();
-    const destination = destinations.find((dest) => dest.name === destinationName);
+    const destination = this.#model.getDestinationByName(destinationName);
 
     if (destination) {
       this.updateElement({
@@ -244,10 +241,9 @@ export default class PointEditView extends AbstractStatefulView {
 
   #destinationInputHandler = (evt) => {
     const input = evt.target;
-    const destinations = this.#model?.getDestinations() ?? [];
     const value = input.value;
-    const isValid = destinations.some((d) => d.name === value);
-    if (!isValid && value !== '') {
+    const isValid = value === '' || this.#model?.getDestinationByName(value);
+    if (!isValid) {
       input.setCustomValidity('Выберите пункт назначения из списка');
     } else {
       input.setCustomValidity('');

@@ -7,7 +7,7 @@ import OffersModel from '../model/offers-model.js';
 import FilterModel from '../model/filter-model.js';
 import LoadingMessageView from '../view/loading-message-view/loading-message-view.js';
 import FailedLoadMessageView from '../view/failed-load-message-view/failed-load-message-view.js';
-import { render } from '../utils/render.js';
+import { render } from '../framework/render.js';
 import { FilterType } from '../utils';
 
 const tripEventsElement = document.querySelector('.page-main')?.querySelector('.trip-events');

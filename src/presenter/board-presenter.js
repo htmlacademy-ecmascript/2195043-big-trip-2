@@ -4,7 +4,7 @@ import EmptyListMessageView from '../view/empty-list-message-view';
 import PointItemContainerView from '../view/point-item-container-view';
 import PointPresenter from './point-presenter.js';
 import UiBlocker from '../framework/ui-blocker/ui-blocker.js';
-import { render, RenderPosition } from '../utils/render.js';
+import { render, RenderPosition } from '../framework/render.js';
 import { FilterType, filterPoints, UserAction } from '../utils';
 
 const UI_BLOCKER_LOWER_LIMIT = 0;
@@ -239,21 +239,21 @@ export default class BoardPresenter {
 
     switch (this.#currentSortType) {
       case 'day':
-        sortedPoints.sort((a, b) => {
-          const dateA = new Date(a.date_from);
-          const dateB = new Date(b.date_from);
-          return dateA - dateB;
+        sortedPoints.sort((firstPoint, secondPoint) => {
+          const dateFirst = new Date(firstPoint.date_from);
+          const dateSecond = new Date(secondPoint.date_from);
+          return dateFirst - dateSecond;
         });
         break;
       case 'time':
-        sortedPoints.sort((a, b) => {
-          const durationA = new Date(a.date_to) - new Date(a.date_from);
-          const durationB = new Date(b.date_to) - new Date(b.date_from);
-          return durationB - durationA;
+        sortedPoints.sort((firstPoint, secondPoint) => {
+          const durationFirst = new Date(firstPoint.date_to) - new Date(firstPoint.date_from);
+          const durationSecond = new Date(secondPoint.date_to) - new Date(secondPoint.date_from);
+          return durationSecond - durationFirst;
         });
         break;
       case 'price':
-        sortedPoints.sort((a, b) => b.base_price - a.base_price);
+        sortedPoints.sort((firstPoint, secondPoint) => secondPoint.base_price - firstPoint.base_price);
         break;
       default:
         break;
@@ -335,10 +335,8 @@ export default class BoardPresenter {
     this.#uiBlocker.block();
 
     try {
-      //const data = { ...action.payload, is_favorite: false };
-      //const newPoint = await this.#pointsModel.createPointOnServer(data);
-      const sorted = this.#sortPoints(this.#pointsModel.getPoints());
-      this.#pointsModel.setPoints(sorted);
+      const data = { ...action.payload, is_favorite: false };
+      await this.#pointsModel.createPointOnServer(data);
       this.#onPointsChange?.();
       this.#handleAddFormClose(false);
       this.#renderBoard();

@@ -34,10 +34,6 @@ export default class PointPresenter {
     this.#escKeyDownHandler = this.#handleEscKeyDown.bind(this);
   }
 
-  get pointId() {
-    return this.#point?.id;
-  }
-
   init() {
     this.#renderPointView();
   }
@@ -72,7 +68,8 @@ export default class PointPresenter {
       this.#destination,
       {
         getOffersByType: (type) => this.#offersModel.getOffersByType(type),
-        getDestinations: () => this.#destinationsModel.getDestinations()
+        getDestinations: () => this.#destinationsModel.getDestinations(),
+        getDestinationByName: (name) => this.#destinationsModel.getDestinationByName(name)
       },
       (formData) => this.#handleFormSubmit(formData, isAddMode),
       () => this.#handleFormClose(isAddMode),

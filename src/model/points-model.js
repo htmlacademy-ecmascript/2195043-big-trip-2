@@ -26,14 +26,6 @@ export default class PointsModel {
     this.#points = [...points];
   }
 
-  patchPoint(patch) {
-    const index = this.#points.findIndex((point) => point.id === patch.id);
-    if (index === -1) {
-      return;
-    }
-    this.#points[index] = { ...this.#points[index], ...patch };
-  }
-
   async updatePointOnServer(pointId, patch) {
     const index = this.#points.findIndex((point) => point.id === pointId);
     if (index === -1) {
@@ -55,16 +47,8 @@ export default class PointsModel {
     return adapted;
   }
 
-  addPoint(point) {
-    this.#points.push(point);
-  }
-
   async deletePointOnServer(pointId) {
     await this.#api.deletePoint(pointId);
     this.#points = this.#points.filter((point) => point.id !== pointId);
-  }
-
-  removePoint(id) {
-    this.#points = this.#points.filter((point) => point.id !== id);
   }
 }
