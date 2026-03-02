@@ -335,10 +335,8 @@ export default class BoardPresenter {
     this.#uiBlocker.block();
 
     try {
-      //const data = { ...action.payload, is_favorite: false };
-      //const newPoint = await this.#pointsModel.createPointOnServer(data);
-      const sorted = this.#sortPoints(this.#pointsModel.getPoints());
-      this.#pointsModel.setPoints(sorted);
+      const data = { ...action.payload, is_favorite: false };
+      await this.#pointsModel.createPointOnServer(data);
       this.#onPointsChange?.();
       this.#handleAddFormClose(false);
       this.#renderBoard();
