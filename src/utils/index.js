@@ -3,6 +3,9 @@ import dayjs from 'dayjs';
 const DATE_FORMAT = 'MMM D';
 const TIME_FORMAT = 'HH:mm';
 const DATETIME_INPUT_FORMAT = 'DD/MM/YY HH:mm';
+const MILLISECONDS_PER_MINUTE = 60 * 1000;
+const MILLISECONDS_PER_HOUR = 60 * MILLISECONDS_PER_MINUTE;
+const MILLISECONDS_PER_DAY = 24 * MILLISECONDS_PER_HOUR;
 
 export const toCapitalize = (text) => {
   const lowercasedText = text.toLowerCase();
@@ -35,9 +38,9 @@ export const formattedDateTimeForInput = (date) => formatDateTime(date, DATETIME
 
 export const getDuration = (dateFrom, dateTo) => {
   const diff = dayjs(dateTo).diff(dayjs(dateFrom));
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+  const days = Math.floor(diff / MILLISECONDS_PER_DAY);
+  const hours = Math.floor((diff % MILLISECONDS_PER_DAY) / MILLISECONDS_PER_HOUR);
+  const minutes = Math.floor((diff % MILLISECONDS_PER_HOUR) / MILLISECONDS_PER_MINUTE);
 
   const pad = (segment) => String(segment).padStart(2, '0');
   const day = pad(days);
